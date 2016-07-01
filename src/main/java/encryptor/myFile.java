@@ -6,7 +6,7 @@ import java.util.Arrays;
 /**
  * Created by murad on 01/07/2016.
  */
-public class myFile {
+public class myFile { 
     private String fileName;
     private String filePath;
     private char[] fileData;
