@@ -10,6 +10,7 @@ public class App {
         String act;
         int idx;
 
+
         Helper helper = new Helper();
         act = helper.getUserInput("enter E/e for Encryption or D/d for Decryption");
         idx = helper.getFilePathFromUser(myFiles,myFilesPaths,"please insert the path of the file");

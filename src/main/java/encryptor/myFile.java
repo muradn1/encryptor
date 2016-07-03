@@ -6,7 +6,7 @@ import java.util.Arrays;
 /**
  * Created by murad on 01/07/2016.
  */
-public class myFile { 
+public class myFile {
     private String fileName;
     private String filePath;
     private char[] fileData;
@@ -66,11 +66,6 @@ public class myFile {
         //System.out.println(Data);
         this.fileData = Data.toCharArray();
 
-        for(char ch:fileData) {
-            if (ch != '\n' && ch != ' ')
-                ch = (char) (ch + 5);
-            //System.out.println(ch);
-        }
     }
 
     public String encryptFile() {
@@ -82,7 +77,7 @@ public class myFile {
                 fileEncrypt[i] = fileData[i];
             //System.out.println(ch);
         }
-        fileEncryption = String.valueOf(fileEncrypt);
+        fileEncryption = String.valueOf(fileEncrypt);//convert char[] to String
         return fileEncryption;
     }
 
@@ -99,7 +94,7 @@ public class myFile {
                     fileDecrypt[i] = fileEncrypt[i];
                 //System.out.println(ch);
             }
-            fileDecryption = String.valueOf(fileDecrypt);
+            fileDecryption = String.valueOf(fileDecrypt);//convert char[] to String
             return fileDecryption;
         }
     }

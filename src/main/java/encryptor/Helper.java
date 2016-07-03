@@ -13,9 +13,7 @@ public class Helper {
         String input,act=null;
         boolean hasToChooseAction = true;
 
-
         Scanner in = new Scanner(System.in);
-
         while (hasToChooseAction) {
             System.out.print(prompt + ": ");// we ask the user to choose the action he wants (encrypt\decrypt)
             input = in.nextLine();
