@@ -1,101 +1,62 @@
 package encryptor;
 
-import javax.imageio.IIOException;
-import java.io.*;
-import java.util.Arrays;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.Path;
+import lombok.Setter;
+import lombok.Getter;
+
 /**
  * Created by murad on 01/07/2016.
  */
-public class myFile {
-    private String fileName;
-    private String filePath;
-    private char[] fileData;
-    private String fileDecryption = null;
-    private String fileEncryption = null;
 
-    public myFile(String name,String path){
-        setFileName(name);
+public class myFile {
+    @Getter private String fileName;
+    @Getter @Setter private String fileFullPath;
+    @Getter private String filePath;
+    @Getter private byte[] fileData;
+    @Getter private String extension;
+
+
+    public myFile(String path){
+        this.fileFullPath =path;
+        setFileName(path);
         setFilePath(path);
         setFileData(path);
-    }
-    public String getFileName() {
-        return this.fileName;
-    }
-    public String getFilePath() {
-        return  this.filePath;
+        setExtension(path);
+       // System.out.println("fullPath = "+fileFullPath+"\nname = "+ fileName +"\nextension = "+extension +"\npath = " + filePath  );
     }
 
-    public char[] getFileData() {
-        return fileData;
-    }
-    public String getFileDecryption() {
-        return this.fileDecryption;
-    }
-    public String getFileEncryption() {
-        return  this.fileEncryption;
-    }
-
-    public void setFileName(String name) {
-        this.fileName = name;
+    public void setFileName(String path) {
+        File tempFile = new File(path);
+        String name = tempFile.getName();
+        int pos = name.lastIndexOf('.');
+        if(pos > -1)
+            name = name.substring(0,pos);
+        fileName = name;
     }
 
-    public void setFilePath(String filePath) {
-        this.filePath = filePath;
+    public void setFilePath(String path) {
+        filePath = path.substring(0,path.lastIndexOf(File.separator));
     }
 
-    public void setFileData(String path)
-    {
-        String Data = null;
+    public void setFileData(String path)    {
+        Path filePath = Paths.get(path);
         try {
-            BufferedReader br = new BufferedReader(new FileReader(path));
-            StringBuilder sb = new StringBuilder();
-            String line = br.readLine();
-
-            while (line != null) {
-                sb.append(line);
-                sb.append("\n");
-                line = br.readLine();
-            }
-
-            br.close();
-            Data = sb.toString();
+            fileData = Files.readAllBytes(filePath);
         }
-        catch(IOException e) {
-
+        catch (IOException e) {
+            e.printStackTrace();
         }
-        //System.out.println(Data);
-        this.fileData = Data.toCharArray();
-
     }
+    public void setExtension(String path) {
+        int i = path.lastIndexOf('.');
+        if(i>0)
+            extension = path.substring(i+1);
+        else
+            extension = null;
 
-    public String encryptFile() {
-        char[] fileEncrypt = new char[fileData.length];
-        for(int i=0;i<fileData.length;i++) {
-            if (fileData[i] != '\n' && fileData[i] != ' ')
-                fileEncrypt[i] = (char) (fileData[i] + 5);
-            else
-                fileEncrypt[i] = fileData[i];
-            //System.out.println(ch);
-        }
-        fileEncryption = String.valueOf(fileEncrypt);//convert char[] to String
-        return fileEncryption;
-    }
-
-    public String decryptFile() {
-        if(fileEncryption == null) //if we didn't encrypt the file yet
-            return String.valueOf(fileData);
-        else {
-            char[] fileEncrypt = fileEncryption.toCharArray();
-            char[] fileDecrypt = new char[fileEncrypt.length];
-            for (int i = 0; i < fileEncrypt.length; i++) {
-                if (fileEncrypt[i] != '\n' && fileEncrypt[i] != ' ')
-                    fileDecrypt[i] = (char) (fileEncrypt[i] - 5);
-                else
-                    fileDecrypt[i] = fileEncrypt[i];
-                //System.out.println(ch);
-            }
-            fileDecryption = String.valueOf(fileDecrypt);//convert char[] to String
-            return fileDecryption;
-        }
     }
 }

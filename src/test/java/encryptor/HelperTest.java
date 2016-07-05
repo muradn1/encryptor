@@ -78,6 +78,8 @@ public class HelperTest {
         in = null;
         out = null;
         pipeOut = null;
+        outBuff = null;
+        baos = null;
 
     }
 

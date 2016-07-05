@@ -1,6 +1,7 @@
 package encryptor;
 
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.Scanner;
 import java.io.*;
 import java.io.IOException;
@@ -27,7 +28,7 @@ public class Helper {
                 act = "decrypt";
                 hasToChooseAction = false;
             } else
-                System.out.println("you have to choose whether to encrypt or decrypt.");
+                System.out.println("you have to choose whether to encrypt or decrypt.\n");
 
         }
         return act;
@@ -41,12 +42,12 @@ public class Helper {
         Scanner in = new Scanner(System.in);
 
         while(hasToChoosePath){
-            System.out.print(prompt + ": ");// we ask the user to insert the path of the file
+            System.out.print("\n"+prompt + ": ");// we ask the user to insert the path of the file
             path = in.nextLine();
 
             File file = new File(path);
             if(file.exists() && !file.isDirectory() && file.canRead()) {
-                myFile userFile = new myFile(file.getName(),path);
+                myFile userFile = new myFile(path);
                 idx = myFilesPaths.indexOf(path);
                 if(idx<0) {//the file doesn't exist in the arrayList
                     myFilesPaths.add(path);
@@ -64,16 +65,36 @@ public class Helper {
     }
 
     public void doActionOnFile(ArrayList<myFile> myFiles,int idx, String act) {
-        String result = null;
+
+        CaesarAlgorithm caesar = new CaesarAlgorithm();
+        myFile myfile = myFiles.get(idx);
 
         if(act.equals("encrypt")) {
-            result = myFiles.get(idx).encryptFile();
+            Random random = new Random();
+            int rand = random.nextInt(Byte.MAX_VALUE -1)+1;
+            System.out.println("\nYour Key is: " + rand);
+            caesar.encrypt((byte)rand, myfile);
+
+
         }
         else if(act.equals("decrypt")) {
-            result = myFiles.get(idx).decryptFile();
+            Scanner in = new Scanner(System.in);
+            boolean hasToInsertKey = true;
+            int key = 0;
+            while(hasToInsertKey) {
+                System.out.print("\nenter your Key: ");
+                if(in.hasNextInt()) {
+                    key = in.nextInt();
+                    hasToInsertKey = false;
+                }
+                else
+                    System.out.println("\nyou need to insert integer number for the KEY");
+            }
+            System.out.println();
+            caesar.decrypt((byte)key,myfile);
         }
 
-        System.out.println(result);
+       // System.out.println(result);
     }
 
 
