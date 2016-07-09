@@ -64,34 +64,82 @@ public class Helper {
         return idx;
     }
 
-    public void doActionOnFile(ArrayList<myFile> myFiles,int idx, String act) {
+    public String ChooseEncryptionAlgorithm(String prompt) {
+        String input,encryptionAlgorithmChosen = null;
+        Scanner in = new Scanner(System.in);
+        boolean hasToChooseEncryptionAlgorithm = true;
 
-        CaesarAlgorithm caesar = new CaesarAlgorithm();
+        while(hasToChooseEncryptionAlgorithm) {
+            System.out.print("\n"+prompt + ": ");// we ask the user to choose the algorithm he wants to use
+            input = in.nextLine();
+
+            if (input.equals("C") || input.equals("c")) {
+                System.out.println("you chose Caesar Algorithm");
+                encryptionAlgorithmChosen = "caesar";
+                hasToChooseEncryptionAlgorithm = false;
+            } else if (input.equals("X") || input.equals("x")) {
+                System.out.println("you chose XOR Algorithm");
+                encryptionAlgorithmChosen = "xor";
+                hasToChooseEncryptionAlgorithm = false;
+            } else if (input.equals("M") || input.equals("m")) {
+                System.out.println("you chose Multiplication Algorithm");
+                encryptionAlgorithmChosen = "multi";
+                hasToChooseEncryptionAlgorithm = false;
+            }else
+                System.out.println("you have to choose one of the Algorithms proposed.\n");
+
+        }
+
+        return encryptionAlgorithmChosen;
+
+    }
+
+    public void doActionOnFile(ArrayList<myFile> myFiles,int idx, String act,String encryptionAlgorithmChosen) {
+
+        //CaesarAlgorithm caesar = new CaesarAlgorithm();
+        EncryptionAlgorithm encryptionAlgorithm;
+        switch (encryptionAlgorithmChosen){
+            case "caesar": encryptionAlgorithm = new CaesarAlgorithm();
+                break;
+            case "xor": encryptionAlgorithm = new XorAlgorithm();
+                break;
+            case "multi": encryptionAlgorithm = new MultiplicationAlgorithm();
+                break;
+            default: encryptionAlgorithm = new CaesarAlgorithm();
+                break;
+        }
         myFile myfile = myFiles.get(idx);
 
         if(act.equals("encrypt")) {
-            Random random = new Random();
-            int rand = random.nextInt(Byte.MAX_VALUE -1)+1;
+
+            Random random;
+            int rand;
+            do {
+                random = new Random();
+                rand = random.nextInt(Byte.MAX_VALUE -1)+1;
+            }while (encryptionAlgorithmChosen.equals("multi") && (rand%2==0));
             System.out.println("\nYour Key is: " + rand);
-            caesar.encrypt((byte)rand, myfile);
+            encryptionAlgorithm.encrypt((byte)rand, myfile);
 
 
         }
         else if(act.equals("decrypt")) {
             Scanner in = new Scanner(System.in);
-            boolean hasToInsertKey = true;
+
             int key = 0;
-            while(hasToInsertKey) {
+            try {
                 System.out.print("\nenter your Key: ");
-                if(in.hasNextInt()) {
-                    key = in.nextInt();
-                    hasToInsertKey = false;
+                if (!in.hasNextInt() || (key=in.nextInt())>Byte.MAX_VALUE) {
+                    throw  new IllegalKeyException();
                 }
-                else
-                    System.out.println("\nyou need to insert integer number for the KEY");
             }
+            catch (IllegalKeyException ex) {
+                System.out.println("\nyou need to insert integer number for the KEY that is less than "+(Byte.MAX_VALUE+1));
+
+            }
+
             System.out.println();
-            caesar.decrypt((byte)key,myfile);
+            encryptionAlgorithm.decrypt((byte)key,myfile);
         }
 
        // System.out.println(result);
