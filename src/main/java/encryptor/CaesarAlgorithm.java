@@ -5,16 +5,15 @@ import java.io.FileOutputStream;
 /**
  * Created by murad on 05/07/2016.
  */
-public class CaesarAlgorithm implements EncryptionAlgorithm {
+public class CaesarAlgorithm extends EncryptDecryptObservable {
 
 
     public void encrypt(byte key, myFile myfile) {
+        encrypt_decrypt_start("Encryption");
 
-        byte[] copiedFileData = new byte[myfile.getFileData().length]; //copying the byteArray
-        for(int i=0; i < copiedFileData.length; i++) {
-            copiedFileData[i] =myfile.getFileData()[i];
-        }
+        byte[] copiedFileData = getTheFileData(myfile);
 
+        ///////////////////////////encrypt using Caesar algorithm/////////////////////////////////
         for(int i=0;i<copiedFileData.length;i++) { //encrypt the bytes in the copied byteArray
             if(copiedFileData[i] + key > Byte.MAX_VALUE) {
                 int temp = (Byte.MIN_VALUE-1)+(copiedFileData[i] + key - Byte.MAX_VALUE);//127+1 := -128 <=> -129 + ((127+1)-127)
@@ -23,28 +22,25 @@ public class CaesarAlgorithm implements EncryptionAlgorithm {
             else
                 copiedFileData[i] = (byte)(copiedFileData[i] + key);
         }
+        //////////////////////////////////////////////////////////////////////////////////////////
 
+        createTheEncryptedFile(myfile,copiedFileData);
 
-        String newEncryptedFileName = myfile.getFileFullPath()+"."+"encrypted";
-        //System.out.println(newEncryptedFileName);
-        try {
-            FileOutputStream fos = new FileOutputStream(newEncryptedFileName);
-            fos.write(copiedFileData);
-            fos.close();
-        }
-        catch(Exception e) {
-            e.printStackTrace();
-        }
-        System.out.println("the encryption of the file is DONE!!");
+        //System.out.println("the encryption of the file is DONE!!");
+        encrypt_decrypt_end("Encryption");
     }
 
-    public void decrypt(byte key, myFile myfile) {
-        byte[] copiedFileData = new byte[myfile.getFileData().length]; //copying the byteArray
-        for(int i=0; i < copiedFileData.length; i++) {
-            copiedFileData[i] =myfile.getFileData()[i];
-        }
 
-        for(int i=0;i<copiedFileData.length;i++) { //encrypt the bytes in the copied byteArray
+
+
+    public void decrypt(byte key, myFile myfile) {
+
+        encrypt_decrypt_start("Decryption");
+
+        byte[] copiedFileData = getTheFileData(myfile);
+
+        ///////////////////////////decrypt using Caesar algorithm/////////////////////////////////
+        for(int i=0;i<copiedFileData.length;i++) { //decrypt the bytes in the copied byteArray
             if(copiedFileData[i] - key < Byte.MIN_VALUE) {
                 int temp = (copiedFileData[i] - key + Byte.MAX_VALUE)-(Byte.MIN_VALUE-1);//
                 copiedFileData[i] = (byte)temp;
@@ -52,22 +48,11 @@ public class CaesarAlgorithm implements EncryptionAlgorithm {
             else
                 copiedFileData[i] = (byte)(copiedFileData[i] - key);
         }
-        myfile.setExtension(myfile.getFileName());
-        //System.out.println(myfile.getExtension());
-        myfile.setFileName(myfile.getFilePath()+"\\"+myfile.getFileName());
-        //System.out.println(myfile.getFileName());
-        //System.out.println(myfile.getFilePath());
-        String newDecryptedFileName = myfile.getFilePath()+"\\"+myfile.getFileName()+"_decrypted"+"."+myfile.getExtension();
+        //////////////////////////////////////////////////////////////////////////////////////////
 
-        try {
-            FileOutputStream fos = new FileOutputStream(newDecryptedFileName);
-            fos.write(copiedFileData);
-            fos.close();
-        }
-        catch(Exception e) {
-            e.printStackTrace();
-        }
-        System.out.println("the Decryption of the file is DONE!!");
+        createTheDecryptedFile(myfile,copiedFileData);
 
+        //System.out.println("the Decryption of the file is DONE!!"); 23
+        encrypt_decrypt_end("Decryption");
     }
 }
