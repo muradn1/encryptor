@@ -124,7 +124,7 @@ public class HelperTest {
         }
 
         act = helper.getUserInput("when user insert wrong input then insert d/D");
-        assertThat("outPutStram contains error stream",baos.toString().contains("you have to choose whether to encrypt or decrypt."),is(true));
+        assertThat("outPutStream contains error stream",baos.toString().contains("you have to choose whether to encrypt or decrypt."),is(true));
     }
 
     @Rule
