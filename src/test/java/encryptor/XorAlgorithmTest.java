@@ -11,13 +11,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
 import static org.hamcrest.CoreMatchers.*;
-
 /**
- * Created by murad on 05/07/2016.
+ * Created by murad on 09/07/2016.
  */
-public class CaesarAlgorithmTest {
+public class XorAlgorithmTest {
 
-    CaesarAlgorithm caesar;
+    XorAlgorithm xorAlgorithm;
     @Mock
     myFile fileForEncrypt;
     @Mock
@@ -50,9 +49,9 @@ public class CaesarAlgorithmTest {
     }
 
     @Test
-    public void testCaesarEncryptionAndDecryption() {
+    public void testXorAlgorithmEncryptionAndDecryption() {
 
-        caesar = new CaesarAlgorithm();
+        xorAlgorithm = new XorAlgorithm();
 
         pathOfFileForEncrypt = "c:\\files\\file1.txt";
         pathOfFileForDecrypt = "c:\\files\\file1.txt.encrypted";
@@ -60,13 +59,13 @@ public class CaesarAlgorithmTest {
 
         fileForEncrypt = new myFile(pathOfFileForEncrypt);
 
-        key =5;
+        key =49;
 
-        caesar.encrypt(key,fileForEncrypt);
+        xorAlgorithm.encrypt(key,fileForEncrypt);
 
         fileForDecrypt = new myFile(pathOfFileForDecrypt);
 
-        caesar.decrypt(key,fileForDecrypt);
+        xorAlgorithm.decrypt(key,fileForDecrypt);
 
         decryptedFile = new myFile(pathOfDecryptedFile);
 
@@ -75,8 +74,4 @@ public class CaesarAlgorithmTest {
         assertThat("the data of the source file and the encrypted file are not the same",fileForEncrypt.getFileData(),not(equalTo(fileForDecrypt.getFileData())));
 
     }
-
-
-
-
 }
