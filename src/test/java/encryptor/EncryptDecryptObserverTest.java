@@ -49,6 +49,18 @@ public class EncryptDecryptObserverTest {
             public void decrypt(byte key, myFile myfile) {
 
             }
+
+            @Override
+            public byte applyEncrypt(byte key, byte copiedByteFromFileData){
+
+                return 0;
+            }
+
+            @Override
+            public byte applyDecrypt(byte key, byte copiedByteFromFileData){
+
+                return 0;
+            }
         };
 
         observable.encrypt_decrypt_start("encryption1");

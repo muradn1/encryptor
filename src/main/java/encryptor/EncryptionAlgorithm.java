@@ -6,4 +6,6 @@ package encryptor;
 public interface EncryptionAlgorithm {
     void encrypt(byte key, myFile myfile);
     void decrypt(byte key, myFile myfile);
+    byte applyEncrypt(byte key, byte copiedByteFromFileData);
+    byte applyDecrypt(byte key, byte copiedByteFromFileData);
 }

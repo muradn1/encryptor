@@ -13,7 +13,7 @@ public class XorAlgorithm extends EncryptDecryptObservable {
 
         ///////////////////////////encrypt using XOR algorithm/////////////////////////////////
         for(int i=0;i<copiedFileData.length;i++) { //encrypt the bytes in the copied byteArray
-                copiedFileData[i] = (byte)(copiedFileData[i] ^ key);
+                copiedFileData[i] = applyEncrypt(key,copiedFileData[i]);
         }
         //////////////////////////////////////////////////////////////////////////////////////////
 
@@ -29,11 +29,26 @@ public class XorAlgorithm extends EncryptDecryptObservable {
 
         ///////////////////////////decrypt using XOR algorithm/////////////////////////////////
         for(int i=0;i<copiedFileData.length;i++) { //decrypt the bytes in the copied byteArray
-                copiedFileData[i] = (byte)(copiedFileData[i] ^ key);
+                copiedFileData[i] = applyDecrypt(key,copiedFileData[i]);
         }
         //////////////////////////////////////////////////////////////////////////////////////////
 
         createTheDecryptedFile(myfile,copiedFileData);
         encrypt_decrypt_end("Decryption");
+    }
+
+    @Override
+    public byte applyEncrypt(byte key, byte copiedByteFromFileData){
+        copiedByteFromFileData = (byte)(copiedByteFromFileData ^ key);
+
+        return copiedByteFromFileData;
+
+    }
+
+    @Override
+    public byte applyDecrypt(byte key, byte copiedByteFromFileData){
+        copiedByteFromFileData = (byte)(copiedByteFromFileData ^ key);
+
+        return copiedByteFromFileData;
     }
 }

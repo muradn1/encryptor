@@ -2,7 +2,6 @@ package encryptor;
 
 
 import java.util.ArrayList;
-import java.util.Random;
 
 
 public class App {
@@ -16,7 +15,7 @@ public class App {
         Helper helper = new Helper();
         act = helper.getUserInput("enter E/e for Encryption or D/d for Decryption");
         idx = helper.getFilePathFromUser(myFiles,myFilesPaths,"please insert the path of the file");
-        encryptionAlgorithmChosen = helper.ChooseEncryptionAlgorithm("enter C/c for Caesar, X/x for XOR, or M/m for Multiplication");
+        encryptionAlgorithmChosen = helper.ChooseEncryptionAlgorithm("enter D/d for Double, R/r for Reverse, S/s for Split, or O/o for other algorithms");
         helper.doActionOnFile(myFiles,idx,act,encryptionAlgorithmChosen); //encrypt/decrypt the file
 
     }

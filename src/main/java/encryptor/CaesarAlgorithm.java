@@ -7,7 +7,7 @@ import java.io.FileOutputStream;
  */
 public class CaesarAlgorithm extends EncryptDecryptObservable {
 
-
+    @Override
     public void encrypt(byte key, myFile myfile) {
         encrypt_decrypt_start("Encryption");
 
@@ -15,12 +15,7 @@ public class CaesarAlgorithm extends EncryptDecryptObservable {
 
         ///////////////////////////encrypt using Caesar algorithm/////////////////////////////////
         for(int i=0;i<copiedFileData.length;i++) { //encrypt the bytes in the copied byteArray
-            if(copiedFileData[i] + key > Byte.MAX_VALUE) {
-                int temp = (Byte.MIN_VALUE-1)+(copiedFileData[i] + key - Byte.MAX_VALUE);//127+1 := -128 <=> -129 + ((127+1)-127)
-                copiedFileData[i] = (byte)temp;
-            }
-            else
-                copiedFileData[i] = (byte)(copiedFileData[i] + key);
+            copiedFileData[i] = applyEncrypt(key,copiedFileData[i]);
         }
         //////////////////////////////////////////////////////////////////////////////////////////
 
@@ -32,7 +27,7 @@ public class CaesarAlgorithm extends EncryptDecryptObservable {
 
 
 
-
+    @Override
     public void decrypt(byte key, myFile myfile) {
 
         encrypt_decrypt_start("Decryption");
@@ -41,12 +36,7 @@ public class CaesarAlgorithm extends EncryptDecryptObservable {
 
         ///////////////////////////decrypt using Caesar algorithm/////////////////////////////////
         for(int i=0;i<copiedFileData.length;i++) { //decrypt the bytes in the copied byteArray
-            if(copiedFileData[i] - key < Byte.MIN_VALUE) {
-                int temp = (copiedFileData[i] - key + Byte.MAX_VALUE)-(Byte.MIN_VALUE-1);//
-                copiedFileData[i] = (byte)temp;
-            }
-            else
-                copiedFileData[i] = (byte)(copiedFileData[i] - key);
+                copiedFileData[i] = applyDecrypt(key,copiedFileData[i]);
         }
         //////////////////////////////////////////////////////////////////////////////////////////
 
@@ -55,4 +45,29 @@ public class CaesarAlgorithm extends EncryptDecryptObservable {
         //System.out.println("the Decryption of the file is DONE!!"); 23
         encrypt_decrypt_end("Decryption");
     }
+
+    @Override
+    public byte applyEncrypt (byte key,byte copiedByteFromFileData) {
+        if(copiedByteFromFileData + key > Byte.MAX_VALUE) {
+            int temp = (Byte.MIN_VALUE-1)+(copiedByteFromFileData + key - Byte.MAX_VALUE);//127+1 := -128 <=> -129 + ((127+1)-127)
+            copiedByteFromFileData = (byte)temp;
+        }
+        else
+            copiedByteFromFileData = (byte)(copiedByteFromFileData + key);
+
+        return copiedByteFromFileData;
+    }
+
+    @Override
+    public byte applyDecrypt(byte key,byte copiedByteFromFileData){
+        if(copiedByteFromFileData - key < Byte.MIN_VALUE) {
+            int temp = (copiedByteFromFileData - key + Byte.MAX_VALUE)-(Byte.MIN_VALUE-1);//
+            copiedByteFromFileData = (byte)temp;
+        }
+        else
+            copiedByteFromFileData = (byte)(copiedByteFromFileData - key);
+
+        return copiedByteFromFileData;
+    }
+
 }

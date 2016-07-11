@@ -35,6 +35,15 @@ public class TestRunner {
         //running the tests of the EncryptDecryptObserver class
         runClassTests(EncryptDecryptObserverTest.class);
 
+        //running the tests of the DoubleAlgorithm class
+        runClassTests(DoubleAlgorithmTest.class);
+
+        //running the tests of the ReverseAlgorithm class
+        runClassTests(ReverseAlgorithmTest.class);
+
+        //running the tests of the SplitAlgorithm class
+        runClassTests(SplitAlgorithmTest.class);
+
 
     }
 

@@ -13,7 +13,7 @@ public class MultiplicationAlgorithm extends EncryptDecryptObservable {
 
         ///////////////////////////encrypt using Multiplication algorithm/////////////////////////////////
         for(int i=0;i<copiedFileData.length;i++) { //encrypt the bytes in the copied byteArray
-            copiedFileData[i] = (byte)(copiedFileData[i] * key);
+            copiedFileData[i] = applyEncrypt(key,copiedFileData[i]);
         }
         //////////////////////////////////////////////////////////////////////////////////////////
 
@@ -26,10 +26,32 @@ public class MultiplicationAlgorithm extends EncryptDecryptObservable {
 
         encrypt_decrypt_start("Decryption");
         byte[] copiedFileData = getTheFileData(myfile);
-        byte decryptionKey=1;
         ///////////////////////////decrypt using Multiplication algorithm/////////////////////////////////
 
+        for(int i=0;i<copiedFileData.length;i++) { //decrypt the bytes in the copied byteArray
+            copiedFileData[i] = applyDecrypt(key,copiedFileData[i]);
+        }
+        //////////////////////////////////////////////////////////////////////////////////////////
+
+        createTheDecryptedFile(myfile,copiedFileData);
+        encrypt_decrypt_end("Decryption");
+
+    }
+
+    @Override
+    public byte applyEncrypt(byte key, byte copiedByteFromFileData){
+
+        copiedByteFromFileData = (byte)(copiedByteFromFileData * key);
+
+        return copiedByteFromFileData;
+
+    }
+
+    @Override
+    public byte applyDecrypt(byte key, byte copiedByteFromFileData){
+
         //finding the decryption key
+        byte decryptionKey=1;
         for(byte bt = Byte.MIN_VALUE; bt<=Byte.MAX_VALUE; bt++) {
             if ((byte)(key*bt)==1) {
                 decryptionKey = bt;
@@ -37,13 +59,10 @@ public class MultiplicationAlgorithm extends EncryptDecryptObservable {
             }
         }
 
-        for(int i=0;i<copiedFileData.length;i++) { //decrypt the bytes in the copied byteArray
-            copiedFileData[i] = (byte)(copiedFileData[i] * decryptionKey);
-        }
-        //////////////////////////////////////////////////////////////////////////////////////////
+        copiedByteFromFileData = (byte)(copiedByteFromFileData * decryptionKey);
 
-        createTheDecryptedFile(myfile,copiedFileData);
-        encrypt_decrypt_end("Decryption");
+        return copiedByteFromFileData;
+
 
     }
 }
