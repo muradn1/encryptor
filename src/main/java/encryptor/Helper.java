@@ -1,15 +1,18 @@
 package encryptor;
 
 import java.util.ArrayList;
-import java.util.Random;
 import java.util.Scanner;
 import java.io.*;
-import java.io.IOException;
 
 /**
  * Created by murad on 01/07/2016.
  */
 public class Helper {
+
+     private String firstAlgorithmChosen = null;
+     private String secondAlgorithmChosen = null;
+     private boolean simpleAlgorithmHasChosen = false;
+
     public String getUserInput(String prompt) {
         String input,act=null;
         boolean hasToChooseAction = true;
@@ -54,16 +57,15 @@ public class Helper {
                     myFiles.add(userFile);
                     idx = myFilesPaths.indexOf(path);
                 }
-
+                System.out.println();
                 hasToChoosePath = false;
             }
             else
-                System.out.println("you have to insert a path of existing readable file (not directory)");
+                System.out.println("you have to insert a path of existing readable file (not directory)\n");
 
         }
         return idx;
     }
-
     public String ChooseEncryptionAlgorithm(String prompt) {
         String input,encryptionAlgorithmChosen = null;
         Scanner in = new Scanner(System.in);
@@ -73,17 +75,20 @@ public class Helper {
             System.out.print("\n"+prompt + ": ");// we ask the user to choose the algorithm he wants to use
             input = in.nextLine();
 
-            if (input.equals("C") || input.equals("c")) {
-                System.out.println("you chose Caesar Algorithm");
-                encryptionAlgorithmChosen = "caesar";
+            if (input.equals("D") || input.equals("d")) {
+                System.out.println("you chose Double Algorithm");
+                encryptionAlgorithmChosen = "double";
                 hasToChooseEncryptionAlgorithm = false;
-            } else if (input.equals("X") || input.equals("x")) {
-                System.out.println("you chose XOR Algorithm");
-                encryptionAlgorithmChosen = "xor";
+            } else if (input.equals("R") || input.equals("r")) {
+                System.out.println("you chose Reverse Algorithm");
+                encryptionAlgorithmChosen = "reverse";
                 hasToChooseEncryptionAlgorithm = false;
-            } else if (input.equals("M") || input.equals("m")) {
-                System.out.println("you chose Multiplication Algorithm");
-                encryptionAlgorithmChosen = "multi";
+            } else if (input.equals("S") || input.equals("s")) {
+                System.out.println("you chose Split Algorithm");
+                encryptionAlgorithmChosen = "split";
+                hasToChooseEncryptionAlgorithm = false;
+            }else if (input.equals("O") || input.equals("o")) {
+                encryptionAlgorithmChosen = ChooseSimpleEncryptionAlgorithm("enter C/c for Caesar, X/x for XOR, or M/m for Multiplication");
                 hasToChooseEncryptionAlgorithm = false;
             }else
                 System.out.println("you have to choose one of the Algorithms proposed.\n");
@@ -94,55 +99,145 @@ public class Helper {
 
     }
 
-    public void doActionOnFile(ArrayList<myFile> myFiles,int idx, String act,String encryptionAlgorithmChosen) {
+        public String ChooseSimpleEncryptionAlgorithm(String prompt) {
+        String input,simpleEncryptionAlgorithmChosen = null;
+        Scanner in = new Scanner(System.in);
+        boolean hasToChooseEncryptionAlgorithm = true;
 
-        //CaesarAlgorithm caesar = new CaesarAlgorithm();
-        EncryptionAlgorithm encryptionAlgorithm;
+        while(hasToChooseEncryptionAlgorithm) {
+            System.out.print(prompt + ": ");// we ask the user to choose the algorithm he wants to use
+            input = in.nextLine();
+
+            if (input.equals("C") || input.equals("c")) {
+                System.out.println("you chose Caesar Algorithm");
+                simpleEncryptionAlgorithmChosen = "caesar";
+                hasToChooseEncryptionAlgorithm = false;
+            } else if (input.equals("X") || input.equals("x")) {
+                System.out.println("you chose XOR Algorithm");
+                simpleEncryptionAlgorithmChosen = "xor";
+                hasToChooseEncryptionAlgorithm = false;
+            } else if (input.equals("M") || input.equals("m")) {
+                System.out.println("you chose Multiplication Algorithm");
+                simpleEncryptionAlgorithmChosen = "multi";
+                hasToChooseEncryptionAlgorithm = false;
+            }else
+                System.out.println("you have to choose one of the Algorithms proposed.\n");
+
+        }
+
+        return simpleEncryptionAlgorithmChosen;
+
+    }
+
+    public EncryptionAlgorithm getSimpleAlgorithmInstance(String encryptionAlgorithmChosen) {
+
+        EncryptionAlgorithm simpleAlgorithmInstance;
+
         switch (encryptionAlgorithmChosen){
-            case "caesar": encryptionAlgorithm = new CaesarAlgorithm();
+            case "caesar": simpleAlgorithmInstance = new CaesarAlgorithm();
+                simpleAlgorithmHasChosen = true;
                 break;
-            case "xor": encryptionAlgorithm = new XorAlgorithm();
+            case "xor": simpleAlgorithmInstance = new XorAlgorithm();
+                simpleAlgorithmHasChosen = true;
                 break;
-            case "multi": encryptionAlgorithm = new MultiplicationAlgorithm();
+            case "multi": simpleAlgorithmInstance = new MultiplicationAlgorithm();
+                simpleAlgorithmHasChosen = true;
                 break;
-            default: encryptionAlgorithm = new CaesarAlgorithm();
+            default:
+                simpleAlgorithmInstance = new CaesarAlgorithm();
+                simpleAlgorithmHasChosen = false;
                 break;
         }
+
+        return simpleAlgorithmInstance;
+    }
+
+    public EncryptionAlgorithmsWithGeneric getComplexAlgorithmInstance(String encryptionAlgorithmChosen) {
+
+        EncryptionAlgorithmsWithGeneric complexAlgorithmInstance;
+
+        switch (encryptionAlgorithmChosen){
+            case "double": complexAlgorithmInstance = new DoubleAlgorithm();
+                simpleAlgorithmHasChosen = false;
+                break;
+            case "reverse": complexAlgorithmInstance = new ReverseAlgorithm();
+                simpleAlgorithmHasChosen = false;
+                break;
+            case "split": complexAlgorithmInstance= new SplitAlgorithm();
+                simpleAlgorithmHasChosen = false;
+                break;
+            default:
+                complexAlgorithmInstance = new ReverseAlgorithm();
+                simpleAlgorithmHasChosen = false;
+                break;
+        }
+
+        return complexAlgorithmInstance;
+    }
+
+    public void getMoreAlgorithmsIfComplexAlgorithmChosen(String encryptionAlgorithmChosen) {
+        System.out.println("\nyou chose complex algorithm, for that you need to choose 1 more algorithms to be used in");
+        System.out.println("Choose the first algorithm:");
+        firstAlgorithmChosen = ChooseSimpleEncryptionAlgorithm("enter C/c for Caesar, X/x for XOR, or M/m for Multiplication");
+
+        if(encryptionAlgorithmChosen.equals("double")) {
+            System.out.println("\nyou chose very complex algorithm, for that you need to choose 1 more algorithms to be used in");
+            System.out.println("Choose the second algorithm:");
+            secondAlgorithmChosen = ChooseSimpleEncryptionAlgorithm("enter C/c for Caesar, X/x for XOR, or M/m for Multiplication");
+        }
+    }
+
+    public void doActionOnFile(ArrayList<myFile> myFiles,int idx, String act,String encryptionAlgorithmChosen) {
+
+        EncryptionAlgorithm simpleEncryptionAlgorithm = null;
+        EncryptDecryptObservable firstAlgorithm = null, secondAlgorithm = null;
+        EncryptionAlgorithmsWithGeneric complexEncryptionAlgorithm = null;
+
+        simpleEncryptionAlgorithm = getSimpleAlgorithmInstance(encryptionAlgorithmChosen);
+
+        if(!simpleAlgorithmHasChosen){
+            complexEncryptionAlgorithm = getComplexAlgorithmInstance(encryptionAlgorithmChosen);
+            getMoreAlgorithmsIfComplexAlgorithmChosen(encryptionAlgorithmChosen);
+            firstAlgorithm = (EncryptDecryptObservable)getSimpleAlgorithmInstance(firstAlgorithmChosen);
+            if(secondAlgorithmChosen != null)
+                secondAlgorithm = (EncryptDecryptObservable)getSimpleAlgorithmInstance(secondAlgorithmChosen);
+        }
+
+
+
         myFile myfile = myFiles.get(idx);
+        Key key = new Key();
 
         if(act.equals("encrypt")) {
 
-            Random random;
-            int rand;
-            do {
-                random = new Random();
-                rand = random.nextInt(Byte.MAX_VALUE -1)+1;
-            }while (encryptionAlgorithmChosen.equals("multi") && (rand%2==0));
-            System.out.println("\nYour Key is: " + rand);
-            encryptionAlgorithm.encrypt((byte)rand, myfile);
-
-
+            key.generateNewKey(myfile.getFilePath());
+            if(simpleAlgorithmHasChosen)
+                simpleEncryptionAlgorithm.encrypt(key.getKey()[0], myfile);
+            else
+                complexEncryptionAlgorithm.<EncryptDecryptObservable,EncryptDecryptObservable>encrypt(key,myfile,firstAlgorithm,secondAlgorithm);
         }
+
         else if(act.equals("decrypt")) {
             Scanner in = new Scanner(System.in);
 
-            int key = 0;
+            String pathOFKey;
             try {
-                System.out.print("\nenter your Key: ");
-                if (!in.hasNextInt() || (key=in.nextInt())>Byte.MAX_VALUE) {
-                    throw  new IllegalKeyException();
-                }
+                System.out.print("\nenter the path of the Key: ");
+                pathOFKey=in.nextLine();
+                key.getTheKeyFromPath(pathOFKey);
             }
             catch (IllegalKeyException ex) {
-                System.out.println("\nyou need to insert integer number for the KEY that is less than "+(Byte.MAX_VALUE+1));
+                System.out.println("\nyou need to insert valid path of the key");
 
             }
 
             System.out.println();
-            encryptionAlgorithm.decrypt((byte)key,myfile);
-        }
 
-       // System.out.println(result);
+            if(simpleAlgorithmHasChosen)
+                simpleEncryptionAlgorithm.decrypt(key.getKey()[0], myfile);
+            else
+                complexEncryptionAlgorithm.<EncryptDecryptObservable,EncryptDecryptObservable>decrypt(key,myfile,firstAlgorithm,secondAlgorithm);
+        }
     }
 
 
