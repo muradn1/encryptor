@@ -24,11 +24,11 @@ public class DoubleAlgorithmTest {
     @Mock
     XorAlgorithm xorAlgorithm;
     @Mock
-    myFile fileForEncrypt;
+    MyFile fileForEncrypt;
     @Mock
-    myFile fileForDecrypt;
+    MyFile fileForDecrypt;
     @Mock
-    myFile decryptedFile;
+    MyFile decryptedFile;
     @Mock
     Key key;
 
@@ -72,17 +72,17 @@ public class DoubleAlgorithmTest {
         pathOfDecryptedFile = "c:\\files\\file1_decrypted.txt";
         pathForKey = "c:\\files";
 
-        fileForEncrypt = new myFile(pathOfFileForEncrypt);
+        fileForEncrypt = new MyFile(pathOfFileForEncrypt);
         key.generateNewKey(pathForKey);
 
 
         doubleAlgorithm.<CaesarAlgorithm,XorAlgorithm>encrypt(key,fileForEncrypt,caesarAlgorithm,xorAlgorithm);
 
-        fileForDecrypt = new myFile(pathOfFileForDecrypt);
+        fileForDecrypt = new MyFile(pathOfFileForDecrypt);
 
         doubleAlgorithm.<CaesarAlgorithm,XorAlgorithm>decrypt(key,fileForDecrypt,caesarAlgorithm,xorAlgorithm);
 
-        decryptedFile = new myFile(pathOfDecryptedFile);
+        decryptedFile = new MyFile(pathOfDecryptedFile);
 
 
         assertArrayEquals("the data of the source file and the decrypted file most be the same",fileForEncrypt.getFileData(),decryptedFile.getFileData());

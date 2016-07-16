@@ -19,11 +19,11 @@ public class CaesarAlgorithmTest {
 
     CaesarAlgorithm caesar;
     @Mock
-    myFile fileForEncrypt;
+    MyFile fileForEncrypt;
     @Mock
-    myFile fileForDecrypt;
+    MyFile fileForDecrypt;
     @Mock
-    myFile decryptedFile;
+    MyFile decryptedFile;
 
     byte key;
     String pathOfFileForEncrypt;
@@ -58,17 +58,17 @@ public class CaesarAlgorithmTest {
         pathOfFileForDecrypt = "c:\\files\\file1.txt.encrypted";
         pathOfDecryptedFile = "c:\\files\\file1_decrypted.txt";
 
-        fileForEncrypt = new myFile(pathOfFileForEncrypt);
+        fileForEncrypt = new MyFile(pathOfFileForEncrypt);
 
         key =5;
 
         caesar.encrypt(key,fileForEncrypt);
 
-        fileForDecrypt = new myFile(pathOfFileForDecrypt);
+        fileForDecrypt = new MyFile(pathOfFileForDecrypt);
 
         caesar.decrypt(key,fileForDecrypt);
 
-        decryptedFile = new myFile(pathOfDecryptedFile);
+        decryptedFile = new MyFile(pathOfDecryptedFile);
 
 
         assertArrayEquals("the data of the source file and the decrypted file most be the same",fileForEncrypt.getFileData(),decryptedFile.getFileData());

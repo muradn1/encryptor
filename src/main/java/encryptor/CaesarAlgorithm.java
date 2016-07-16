@@ -1,15 +1,13 @@
 package encryptor;
 
-import java.io.FileOutputStream;
-
 /**
  * Created by murad on 05/07/2016.
  */
 public class CaesarAlgorithm extends EncryptDecryptObservable {
 
     @Override
-    public void encrypt(byte key, myFile myfile) {
-        encrypt_decrypt_start("Encryption");
+    public void encrypt(byte key, MyFile myfile) {
+        encrypt_decrypt_start("Encryption",myfile.getFileName()+"."+myfile.getExtension());
 
         byte[] copiedFileData = getTheFileData(myfile);
 
@@ -22,15 +20,15 @@ public class CaesarAlgorithm extends EncryptDecryptObservable {
         createTheEncryptedFile(myfile,copiedFileData);
 
         //System.out.println("the encryption of the file is DONE!!");
-        encrypt_decrypt_end("Encryption");
+        encrypt_decrypt_end("Encryption",myfile.getFileName()+"."+myfile.getExtension());
     }
 
 
 
     @Override
-    public void decrypt(byte key, myFile myfile) {
+    public void decrypt(byte key, MyFile myfile) {
 
-        encrypt_decrypt_start("Decryption");
+        encrypt_decrypt_start("Decryption",myfile.getFileName()+"."+myfile.getExtension());
 
         byte[] copiedFileData = getTheFileData(myfile);
 
@@ -43,7 +41,7 @@ public class CaesarAlgorithm extends EncryptDecryptObservable {
         createTheDecryptedFile(myfile,copiedFileData);
 
         //System.out.println("the Decryption of the file is DONE!!"); 23
-        encrypt_decrypt_end("Decryption");
+        encrypt_decrypt_end("Decryption",myfile.getFileName()+"."+myfile.getExtension());
     }
 
     @Override

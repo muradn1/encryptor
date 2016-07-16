@@ -6,9 +6,9 @@ package encryptor;
 public class SplitAlgorithm  extends EncryptDecryptObservable implements EncryptionAlgorithmsWithGeneric {
 
     @Override
-    public <Alg1 extends EncryptDecryptObservable ,Alg2 extends EncryptDecryptObservable> void encrypt(Key key, myFile myfile, Alg1 algorithm1, Alg2 algorithm2){
+    public <Alg1 extends EncryptDecryptObservable ,Alg2 extends EncryptDecryptObservable> void encrypt(Key key, MyFile myfile, Alg1 algorithm1, Alg2 algorithm2){
 
-        encrypt_decrypt_start("Encryption");
+        encrypt_decrypt_start("Encryption",myfile.getFileName()+"."+myfile.getExtension());
 
 
         byte key1 = key.getKey()[0];
@@ -22,14 +22,14 @@ public class SplitAlgorithm  extends EncryptDecryptObservable implements Encrypt
         //////////////////////////////////////////////////////////////////////////////////////////
 
         createTheEncryptedFile(myfile,copiedFileData);
-        encrypt_decrypt_end("Encryption");
+        encrypt_decrypt_end("Encryption",myfile.getFileName()+"."+myfile.getExtension());
 
     }
 
     @Override
-    public <Alg1 extends EncryptDecryptObservable,Alg2 extends EncryptDecryptObservable> void decrypt(Key key, myFile myfile, Alg1 algorithm1, Alg2 algorithm2){
+    public <Alg1 extends EncryptDecryptObservable,Alg2 extends EncryptDecryptObservable> void decrypt(Key key, MyFile myfile, Alg1 algorithm1, Alg2 algorithm2){
 
-        encrypt_decrypt_start("Decryption");
+        encrypt_decrypt_start("Decryption",myfile.getFileName()+"."+myfile.getExtension());
 
         byte key1 = key.getKey()[0];
         byte key2 = key.getKey()[1];
@@ -42,17 +42,17 @@ public class SplitAlgorithm  extends EncryptDecryptObservable implements Encrypt
         //////////////////////////////////////////////////////////////////////////////////////////
 
         createTheDecryptedFile(myfile,copiedFileData);
-        encrypt_decrypt_end("Decryption");
+        encrypt_decrypt_end("Decryption",myfile.getFileName()+"."+myfile.getExtension());
     }
 
 
     @Override
-    public void encrypt(byte key, myFile myfile) {
+    public void encrypt(byte key, MyFile myfile) {
 
     }
 
     @Override
-    public void decrypt(byte key, myFile myfile) {
+    public void decrypt(byte key, MyFile myfile) {
 
     }
 

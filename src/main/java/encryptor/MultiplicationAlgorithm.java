@@ -6,9 +6,9 @@ package encryptor;
 public class MultiplicationAlgorithm extends EncryptDecryptObservable {
 
     @Override
-    public void encrypt(byte key, myFile myfile) {
+    public void encrypt(byte key, MyFile myfile) {
 
-        encrypt_decrypt_start("Encryption");
+        encrypt_decrypt_start("Encryption",myfile.getFileName()+"."+myfile.getExtension());
         byte[] copiedFileData = getTheFileData(myfile);
 
         ///////////////////////////encrypt using Multiplication algorithm/////////////////////////////////
@@ -18,13 +18,13 @@ public class MultiplicationAlgorithm extends EncryptDecryptObservable {
         //////////////////////////////////////////////////////////////////////////////////////////
 
         createTheEncryptedFile(myfile,copiedFileData);
-        encrypt_decrypt_end("Encryption");
+        encrypt_decrypt_end("Encryption",myfile.getFileName()+"."+myfile.getExtension());
     }
 
     @Override
-    public void decrypt(byte key, myFile myfile) {
+    public void decrypt(byte key, MyFile myfile) {
 
-        encrypt_decrypt_start("Decryption");
+        encrypt_decrypt_start("Decryption",myfile.getFileName()+"."+myfile.getExtension());
         byte[] copiedFileData = getTheFileData(myfile);
         ///////////////////////////decrypt using Multiplication algorithm/////////////////////////////////
 
@@ -34,7 +34,7 @@ public class MultiplicationAlgorithm extends EncryptDecryptObservable {
         //////////////////////////////////////////////////////////////////////////////////////////
 
         createTheDecryptedFile(myfile,copiedFileData);
-        encrypt_decrypt_end("Decryption");
+        encrypt_decrypt_end("Decryption",myfile.getFileName()+"."+myfile.getExtension());
 
     }
 

@@ -1,22 +1,19 @@
 package encryptor;
 
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.Matchers.greaterThan;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Scanner;
 
 
 /**
@@ -40,7 +37,7 @@ public class HelperTest {
     //
     InputStream oldIn;
     @Mock
-    ArrayList<myFile> myFiles;
+    ArrayList<MyFile> MyFiles;
     @Mock
     ArrayList<String> myFilesPaths;
 
@@ -56,7 +53,7 @@ public class HelperTest {
         oldOut = System.out;
         oldIn = System.in;
 
-        myFiles = new ArrayList<myFile>();
+        MyFiles = new ArrayList<MyFile>();
         myFilesPaths = new ArrayList<String>();
         //oldIn = System.in;
         System.setOut(outBuff);
@@ -136,7 +133,8 @@ public class HelperTest {
         //out.print("abc\n" + "e\n");
         File tempFile = tempFolder.newFile("newFile.txt");
         File tempFolder1 = tempFolder.newFolder("newFolder");
-        int idx;
+        String keyPath;
+        boolean isDir = false;
 
 
        // System.setOut(oldOut);
@@ -144,15 +142,14 @@ public class HelperTest {
        // System.out.println(tempFolder1.getPath());
 
         out.print(tempFolder1.getPath() + "\n"+ tempFile.getPath()+"\n");
-        idx = helper.getFilePathFromUser(myFiles,myFilesPaths,"adding path of folder then adding path of file");
+        keyPath = helper.getFilePathFromUser(MyFiles,isDir,"adding path of folder then adding path of file");
         assertThat(baos.toString().contains("you have to insert a path of existing readable file (not directory)"),is(true));
-        assertThat(idx,is(greaterThan(-1)));//if the idx >= 0 then the file was created successfully
 
         baos.reset();
         out.print("c:\\abc.txt" + "\n"+ tempFile.getPath()+"\n");
-        idx = helper.getFilePathFromUser(myFiles,myFilesPaths,"adding path of file that isn't exist then adding path of existing file");
+        keyPath = helper.getFilePathFromUser(MyFiles,isDir,"adding path of file that isn't exist then adding path of existing file");
         assertThat(baos.toString().contains("you have to insert a path of existing readable file (not directory)"),is(true));
-        assertThat(idx,is(greaterThan(-1)));//if the idx >= 0 then the file was created successfully
+
 
     }
 

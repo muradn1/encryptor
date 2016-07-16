@@ -18,15 +18,18 @@ public class EncryptDecryptObserver implements Observer{
 
     @Override
     public void update(Observable o, Object arg) {
-        System.out.println(arg);
-        String args = (String)arg;
-        if(args.contains("start")) {
-            startedTime = Calendar.getInstance().getTimeInMillis();
+
+        String[] nameAndMessage = (String[])arg;
+        System.out.println(nameAndMessage[1]);
+        if(nameAndMessage[1].contains("start")) {
+            //startedTime = Calendar.getInstance().getTimeInMillis();
+            startedTime = System.nanoTime();
 
         }
         else {
-            elapsedTime = Calendar.getInstance().getTimeInMillis() - startedTime;
-            System.out.println("the time which the whole process took (in millis): " + elapsedTime);
+           // elapsedTime = Calendar.getInstance().getTimeInMillis() - startedTime;
+            elapsedTime = System.nanoTime()-startedTime;
+            System.out.printf("the time which the file: "+nameAndMessage[0] +" took (in nanos): %,d\n",elapsedTime);
         }
 
     }

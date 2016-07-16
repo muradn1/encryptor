@@ -12,7 +12,7 @@ import lombok.Getter;
  * Created by murad on 01/07/2016.
  */
 
-public class myFile {
+public class MyFile {
     @Getter private String fileName;
     @Getter @Setter private String fileFullPath;
     @Getter private String filePath;
@@ -20,7 +20,7 @@ public class myFile {
     @Getter private String extension;
 
 
-    public myFile(String path){
+    public MyFile(String path){
         this.fileFullPath =path;
         setFileName(path);
         setFilePath(path);
@@ -58,5 +58,22 @@ public class myFile {
         else
             extension = null;
 
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj == this)
+            return true;
+        if(!(obj instanceof MyFile))
+            return false;
+        MyFile mf = (MyFile)obj;
+        return fileFullPath.equals(mf.fileFullPath);
+    }
+
+    @Override
+    public int hashCode() {
+        int result =17;
+        result = 31 * result + fileFullPath.hashCode();
+        return result;
     }
 }

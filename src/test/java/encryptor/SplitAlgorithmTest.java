@@ -22,11 +22,11 @@ public class SplitAlgorithmTest {
     @Mock
     CaesarAlgorithm caesarAlgorithm;
     @Mock
-    myFile fileForEncrypt;
+    MyFile fileForEncrypt;
     @Mock
-    myFile fileForDecrypt;
+    MyFile fileForDecrypt;
     @Mock
-    myFile decryptedFile;
+    MyFile decryptedFile;
     @Mock
     Key key;
 
@@ -68,17 +68,17 @@ public class SplitAlgorithmTest {
         pathOfDecryptedFile = "c:\\files\\file1_decrypted.txt";
         pathForKey = "c:\\files";
 
-        fileForEncrypt = new myFile(pathOfFileForEncrypt);
+        fileForEncrypt = new MyFile(pathOfFileForEncrypt);
         key.generateNewKey(pathForKey);
 
 
         splitAlgorithm.<CaesarAlgorithm,CaesarAlgorithm>encrypt(key,fileForEncrypt,caesarAlgorithm,null);
 
-        fileForDecrypt = new myFile(pathOfFileForDecrypt);
+        fileForDecrypt = new MyFile(pathOfFileForDecrypt);
 
         splitAlgorithm.<CaesarAlgorithm,XorAlgorithm>decrypt(key,fileForDecrypt,caesarAlgorithm,null);
 
-        decryptedFile = new myFile(pathOfDecryptedFile);
+        decryptedFile = new MyFile(pathOfDecryptedFile);
 
 
         assertArrayEquals("the data of the source file and the decrypted file most be the same",fileForEncrypt.getFileData(),decryptedFile.getFileData());

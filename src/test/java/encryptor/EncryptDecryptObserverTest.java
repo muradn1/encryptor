@@ -41,12 +41,12 @@ public class EncryptDecryptObserverTest {
     public void testEncryptDecryptObserver(){
         observable = new EncryptDecryptObservable() {
             @Override
-            public void encrypt(byte key, myFile myfile) {
+            public void encrypt(byte key, MyFile myfile) {
 
             }
 
             @Override
-            public void decrypt(byte key, myFile myfile) {
+            public void decrypt(byte key, MyFile myfile) {
 
             }
 
@@ -63,12 +63,12 @@ public class EncryptDecryptObserverTest {
             }
         };
 
-        observable.encrypt_decrypt_start("encryption1");
+        observable.encrypt_decrypt_start("encryption1","nameOfFileForTest");
 
 
         assertThat("outPutStream contains 'encryption1'",baos.toString().contains("encryption1"),is(true));
 
-        observable.encrypt_decrypt_end("encryption2");
+        observable.encrypt_decrypt_end("encryption2","nameOfFileForTest");
 
         assertThat("outPutStream contains 'encryption1'",baos.toString().contains("encryption1"),is(true));
 

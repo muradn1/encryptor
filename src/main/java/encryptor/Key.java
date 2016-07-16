@@ -9,7 +9,7 @@ import java.util.Random;
 /**
  * Created by murad on 11/07/2016.
  */
-public class Key {
+public class Key implements Serializable {
 
     @Getter @Setter private byte[] key;
     @Getter @Setter private String pathOfKey;
@@ -34,9 +34,8 @@ public class Key {
             ObjectOutputStream os = new ObjectOutputStream(fos);
             os.write(key);
             os.close();
-            fos.close();
-            System.out.println("the path of the key is: "+ this.pathOfKey);
-            System.out.println("the first key is: "+key[0] +"\nthe second key is: " + key[1]);
+            System.out.println("the path of the key is: "+ this.pathOfKey+"\n");
+            //System.out.println("the first key is: "+key[0] +"\nthe second key is: " + key[1]);
 
         }
         catch(Exception e) {
@@ -53,10 +52,9 @@ public class Key {
             FileInputStream fileIn = new FileInputStream(pathOfTheKey);
             ObjectInputStream is = new ObjectInputStream(fileIn);
             is.read(key);
-            System.out.println("the first key is: "+key[0] +"\nthe second key is: " + key[1]);
+            //System.out.println("the first key is: "+key[0] +"\nthe second key is: " + key[1]);
             this.pathOfKey = pathOfTheKey;
             is.close();
-            fileIn.close();
         }catch(IOException i)
         {
             i.printStackTrace();
@@ -66,5 +64,20 @@ public class Key {
 
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if(obj == this)
+            return true;
+        if(!(obj instanceof Key))
+            return false;
+        Key k = (Key)obj;
+        return key.equals(k.key);
+    }
 
+    @Override
+    public int hashCode() {
+        int result =17;
+        result = 31 * result + key.hashCode();
+        return result;
+    }
 }
