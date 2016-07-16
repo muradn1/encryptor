@@ -1,8 +1,14 @@
 package encryptor;
 
+import lombok.Getter;
+
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.io.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Created by murad on 01/07/2016.
@@ -11,7 +17,8 @@ public class Helper {
 
      private String firstAlgorithmChosen = null;
      private String secondAlgorithmChosen = null;
-     private boolean simpleAlgorithmHasChosen = false;
+
+    @Getter private boolean simpleAlgorithmHasChosen = false;
 
     public String getUserInput(String prompt) {
         String input,act=null;
@@ -37,10 +44,60 @@ public class Helper {
         return act;
     }
 
-    public int getFilePathFromUser(ArrayList<myFile> myFiles,ArrayList<String> myFilesPaths,String prompt) {
+
+    public boolean askUserToChooseDirOrFile(String prompt){
+        boolean isDir = false;
+        boolean hasToDecide = true;
+        String input;
+
+        Scanner in = new Scanner(System.in);
+        while (hasToDecide) {
+            System.out.print(prompt + ": ");// we ask the user to decide whether he wants to encrypt\decrypt file or directory
+            input = in.nextLine();
+            if (input.equals("D") || input.equals("d")) {
+                System.out.println("you chose directory");
+                isDir = true;
+                hasToDecide = false;
+            } else if (input.equals("F") || input.equals("f")) {
+                System.out.println("you chose file");
+                isDir = false;
+                hasToDecide = false;
+            } else
+                System.out.println("you have to choose file or directory.\n");
+
+        }
+
+        return isDir;
+    }
+
+    public boolean askUserIfHeWantsSyncOrAsync(String prompt){
+        boolean isSync = false;
+        boolean hasToChooseSyncOrAsync = true;
+        String input;
+
+        Scanner in = new Scanner(System.in);
+        while (hasToChooseSyncOrAsync) {
+            System.out.print(prompt + ": ");// we ask the user to decide whether he wants to use sync or async approach
+            input = in.nextLine();
+            if (input.equals("S") || input.equals("s")) {
+                System.out.println("you chose sync");
+                isSync = true;
+                hasToChooseSyncOrAsync = false;
+            } else if (input.equals("A") || input.equals("a")) {
+                System.out.println("you chose async");
+                isSync = false;
+                hasToChooseSyncOrAsync = false;
+            } else
+                System.out.println("you have to choose sync or async.\n");
+        }
+        return isSync;
+    }
+
+
+    public String getFilePathFromUser(ArrayList<MyFile> MyFiles,boolean isDir, String prompt) {
         boolean hasToChoosePath = true;
-        int idx = -2;
         String path;
+        String keyPath = null;
 
         Scanner in = new Scanner(System.in);
 
@@ -48,24 +105,50 @@ public class Helper {
             System.out.print("\n"+prompt + ": ");// we ask the user to insert the path of the file
             path = in.nextLine();
 
-            File file = new File(path);
-            if(file.exists() && !file.isDirectory() && file.canRead()) {
-                myFile userFile = new myFile(path);
-                idx = myFilesPaths.indexOf(path);
-                if(idx<0) {//the file doesn't exist in the arrayList
-                    myFilesPaths.add(path);
-                    myFiles.add(userFile);
-                    idx = myFilesPaths.indexOf(path);
-                }
-                System.out.println();
-                hasToChoosePath = false;
+
+            if(!isDir) {
+                File file = new File(path);
+                if (file.exists() && !file.isDirectory() && file.canRead()) {
+
+                    MyFile userFile = new MyFile(path);
+                    MyFiles.add(userFile);
+                    keyPath = userFile.getFilePath();
+                    hasToChoosePath = false;
+
+                } else
+                    System.out.println("you have to insert a path of existing readable file (not directory)\n");
             }
-            else
-                System.out.println("you have to insert a path of existing readable file (not directory)\n");
+            else if(isDir){
+                File Dir = new File(path);
+                if(Dir.exists() && Dir.isDirectory()){
+                    for(File fileEntry : Dir.listFiles()){
+                        if(!fileEntry.isDirectory()){
+                            MyFile fileInDir = new MyFile(fileEntry.getAbsolutePath());
+                            MyFiles.add(fileInDir);
+                        }
+                    }
+                    File encryptedDir = new File(path+"\\encrypted");
+                    File decryptedDir = new File(path+"\\decrypted");
+                    try{
+                        if(!encryptedDir.exists())
+                        encryptedDir.mkdir();
+                        if(!decryptedDir.exists())
+                        decryptedDir.mkdir();
+                    }
+                    catch (SecurityException ex){
+                        System.out.println("we Can't make sub-directories");
+                    }
+                    keyPath = path;
+                    hasToChoosePath = false;
+                }else
+                    System.out.println("you have to insert a path of existing directory\n");
+            }
 
         }
-        return idx;
+        return keyPath;
     }
+
+
     public String ChooseEncryptionAlgorithm(String prompt) {
         String input,encryptionAlgorithmChosen = null;
         Scanner in = new Scanner(System.in);
@@ -78,17 +161,21 @@ public class Helper {
             if (input.equals("D") || input.equals("d")) {
                 System.out.println("you chose Double Algorithm");
                 encryptionAlgorithmChosen = "double";
+                simpleAlgorithmHasChosen = false;
                 hasToChooseEncryptionAlgorithm = false;
             } else if (input.equals("R") || input.equals("r")) {
                 System.out.println("you chose Reverse Algorithm");
                 encryptionAlgorithmChosen = "reverse";
+                simpleAlgorithmHasChosen = false;
                 hasToChooseEncryptionAlgorithm = false;
             } else if (input.equals("S") || input.equals("s")) {
                 System.out.println("you chose Split Algorithm");
                 encryptionAlgorithmChosen = "split";
+                simpleAlgorithmHasChosen = false;
                 hasToChooseEncryptionAlgorithm = false;
             }else if (input.equals("O") || input.equals("o")) {
                 encryptionAlgorithmChosen = ChooseSimpleEncryptionAlgorithm("enter C/c for Caesar, X/x for XOR, or M/m for Multiplication");
+                simpleAlgorithmHasChosen = true;
                 hasToChooseEncryptionAlgorithm = false;
             }else
                 System.out.println("you have to choose one of the Algorithms proposed.\n");
@@ -99,7 +186,10 @@ public class Helper {
 
     }
 
-        public String ChooseSimpleEncryptionAlgorithm(String prompt) {
+
+
+
+    public String ChooseSimpleEncryptionAlgorithm(String prompt) {
         String input,simpleEncryptionAlgorithmChosen = null;
         Scanner in = new Scanner(System.in);
         boolean hasToChooseEncryptionAlgorithm = true;
@@ -129,6 +219,9 @@ public class Helper {
 
     }
 
+
+
+
     public EncryptionAlgorithm getSimpleAlgorithmInstance(String encryptionAlgorithmChosen) {
 
         EncryptionAlgorithm simpleAlgorithmInstance;
@@ -151,6 +244,9 @@ public class Helper {
 
         return simpleAlgorithmInstance;
     }
+
+
+
 
     public EncryptionAlgorithmsWithGeneric getComplexAlgorithmInstance(String encryptionAlgorithmChosen) {
 
@@ -175,6 +271,9 @@ public class Helper {
         return complexAlgorithmInstance;
     }
 
+
+
+
     public void getMoreAlgorithmsIfComplexAlgorithmChosen(String encryptionAlgorithmChosen) {
         System.out.println("\nyou chose complex algorithm, for that you need to choose 1 more algorithms to be used in");
         System.out.println("Choose the first algorithm:");
@@ -187,7 +286,12 @@ public class Helper {
         }
     }
 
-    public void doActionOnFile(ArrayList<myFile> myFiles,int idx, String act,String encryptionAlgorithmChosen) {
+
+
+
+
+
+    public void doActionOnFile(ArrayList<MyFile> MyFiles, int idx, String act, String encryptionAlgorithmChosen,Key key) {
 
         EncryptionAlgorithm simpleEncryptionAlgorithm = null;
         EncryptDecryptObservable firstAlgorithm = null, secondAlgorithm = null;
@@ -197,7 +301,6 @@ public class Helper {
 
         if(!simpleAlgorithmHasChosen){
             complexEncryptionAlgorithm = getComplexAlgorithmInstance(encryptionAlgorithmChosen);
-            getMoreAlgorithmsIfComplexAlgorithmChosen(encryptionAlgorithmChosen);
             firstAlgorithm = (EncryptDecryptObservable)getSimpleAlgorithmInstance(firstAlgorithmChosen);
             if(secondAlgorithmChosen != null)
                 secondAlgorithm = (EncryptDecryptObservable)getSimpleAlgorithmInstance(secondAlgorithmChosen);
@@ -205,12 +308,9 @@ public class Helper {
 
 
 
-        myFile myfile = myFiles.get(idx);
-        Key key = new Key();
-
+        MyFile myfile = MyFiles.get(idx);
         if(act.equals("encrypt")) {
 
-            key.generateNewKey(myfile.getFilePath());
             if(simpleAlgorithmHasChosen)
                 simpleEncryptionAlgorithm.encrypt(key.getKey()[0], myfile);
             else
@@ -218,26 +318,46 @@ public class Helper {
         }
 
         else if(act.equals("decrypt")) {
-            Scanner in = new Scanner(System.in);
-
-            String pathOFKey;
-            try {
-                System.out.print("\nenter the path of the Key: ");
-                pathOFKey=in.nextLine();
-                key.getTheKeyFromPath(pathOFKey);
-            }
-            catch (IllegalKeyException ex) {
-                System.out.println("\nyou need to insert valid path of the key");
-
-            }
-
-            System.out.println();
 
             if(simpleAlgorithmHasChosen)
                 simpleEncryptionAlgorithm.decrypt(key.getKey()[0], myfile);
             else
                 complexEncryptionAlgorithm.<EncryptDecryptObservable,EncryptDecryptObservable>decrypt(key,myfile,firstAlgorithm,secondAlgorithm);
         }
+    }
+
+
+    public void doSyncActionOnDir(ArrayList<MyFile> myFiles,String act, String encryptionAlgorithmChosen, Key key){
+        for(int i = 0;i< myFiles.size();i++)
+            doActionOnFile(myFiles,i,act,encryptionAlgorithmChosen,key);
+    }
+
+    public void doAsyncActionOnDir(ArrayList<MyFile> myFiles,String act, String encryptionAlgorithmChosen, Key key){
+        Executor executor = new threadPerTaskExecutor();
+        int numOfFilesInDir = myFiles.size();
+
+        final CountDownLatch done = new CountDownLatch(numOfFilesInDir);
+        for(int i=0;i<numOfFilesInDir;i++) {
+            final Integer idx = new Integer(i);
+            executor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    try{
+                        doActionOnFile(myFiles,idx,act,encryptionAlgorithmChosen,key);
+
+                    }finally {
+                        done.countDown();
+                    }
+                }
+            });
+        }
+        try {
+            done.await();
+        }catch (InterruptedException ex) {
+            System.out.println("the waiting has interrupted in helper.doAsyncActionOnDir");
+            ex.printStackTrace();
+        }
+
     }
 
 
