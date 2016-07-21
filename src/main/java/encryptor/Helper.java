@@ -1,14 +1,25 @@
 package encryptor;
 
+import EncryptionWithJAXB.jaxb.ObjectFactory;
+import com.sun.xml.internal.bind.v2.schemagen.xmlschema.List;
 import lombok.Getter;
+import org.xml.sax.SAXException;
+import reportwithJAXB.jaxb.ReportForDirectory;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.Validator;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.io.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
 
 /**
  * Created by murad on 01/07/2016.
@@ -291,7 +302,7 @@ public class Helper {
 
 
 
-    public void doActionOnFile(ArrayList<MyFile> MyFiles, int idx, String act, String encryptionAlgorithmChosen,Key key) {
+    public void doActionOnFile(ArrayList<MyFile> MyFiles, int idx, String act, String encryptionAlgorithmChosen,Key key) throws Exception {
 
         EncryptionAlgorithm simpleEncryptionAlgorithm = null;
         EncryptDecryptObservable firstAlgorithm = null, secondAlgorithm = null;
@@ -328,26 +339,101 @@ public class Helper {
 
 
     public void doSyncActionOnDir(ArrayList<MyFile> myFiles,String act, String encryptionAlgorithmChosen, Key key){
-        for(int i = 0;i< myFiles.size();i++)
-            doActionOnFile(myFiles,i,act,encryptionAlgorithmChosen,key);
+
+        String pathOFDir = myFiles.get(0).getFilePath();
+        reportwithJAXB.jaxb.ObjectFactory objectFactory = new reportwithJAXB.jaxb.ObjectFactory();
+        reportwithJAXB.jaxb.ReportForDirectory reportForDirectory = objectFactory.createReportForDirectory();
+        reportForDirectory.setNameOfDirectory(pathOFDir);//the name of the directory is the path to any file in it
+        reportwithJAXB.jaxb.ReportForDirectory.FilesInDirectory filesInDirectory = objectFactory.createReportForDirectoryFilesInDirectory();
+        reportForDirectory.setFilesInDirectory(filesInDirectory);
+        filesInDirectory.setFiles(new ArrayList<reportwithJAXB.jaxb.ReportForDirectory.FilesInDirectory.File>());
+        long startedTime,endTime;
+        for(int i = 0;i< myFiles.size();i++){
+            reportwithJAXB.jaxb.ReportForDirectory.FilesInDirectory.File file = objectFactory.createReportForDirectoryFilesInDirectoryFile();
+            file.setNameOfFile(myFiles.get(i).getFileName()+"."+myFiles.get(i).getExtension());
+            file.setAction(act);
+            try{
+                startedTime = System.nanoTime();
+                doActionOnFile(myFiles,i,act,encryptionAlgorithmChosen,key);
+                endTime = System.nanoTime()-startedTime;
+                file.setStatus("succeeded");
+                reportwithJAXB.jaxb.ReportForDirectory.FilesInDirectory.File.IfSucceeded ifSucceeded = objectFactory.createReportForDirectoryFilesInDirectoryFileIfSucceeded();
+                ifSucceeded.setTimeInMillis(TimeUnit.NANOSECONDS.toMillis(endTime));
+                file.setIfSucceeded(ifSucceeded);
+
+            }catch (Exception ex){
+                file.setStatus("failed");
+                reportwithJAXB.jaxb.ReportForDirectory.FilesInDirectory.File.IfFailed ifFailed = objectFactory.createReportForDirectoryFilesInDirectoryFileIfFailed();
+                ifFailed.setExceptionName(ex.getClass().getSimpleName());
+                ifFailed.setExceptionMessage(ex.getMessage());
+                StringWriter sw = new StringWriter();//
+                PrintWriter pw = new PrintWriter(sw);// to get Stacktrace as String
+                ex.printStackTrace(pw);//
+                ifFailed.setExceptionStacktrace(sw.toString());
+                file.setIfFailed(ifFailed);
+            }finally {
+                filesInDirectory.getFiles().add(file);
+            }
+        }
+        try{
+            JAXBContext jaxbContext = JAXBContext.newInstance("reportwithJAXB.jaxb");
+            Marshaller marshaller = jaxbContext.createMarshaller();
+            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT,new Boolean(true));
+            marshaller.marshal(reportForDirectory,new FileOutputStream(pathOFDir+"\\report.xml"));
+        }catch (Exception ex){
+            System.out.println("something wrong generating report in sync");
+            ex.printStackTrace();
+        }
+
+
     }
 
     public void doAsyncActionOnDir(ArrayList<MyFile> myFiles,String act, String encryptionAlgorithmChosen, Key key){
         Executor executor = new threadPerTaskExecutor();
         int numOfFilesInDir = myFiles.size();
+        String pathOFDir = myFiles.get(0).getFilePath();
+        reportwithJAXB.jaxb.ObjectFactory objectFactory = new reportwithJAXB.jaxb.ObjectFactory();
+        reportwithJAXB.jaxb.ReportForDirectory reportForDirectory = objectFactory.createReportForDirectory();
+        reportForDirectory.setNameOfDirectory(pathOFDir);//the name of the directory is the path to any file in it
+        reportwithJAXB.jaxb.ReportForDirectory.FilesInDirectory filesInDirectory = objectFactory.createReportForDirectoryFilesInDirectory();
+        reportForDirectory.setFilesInDirectory(filesInDirectory);
+        filesInDirectory.setFiles(new ArrayList<reportwithJAXB.jaxb.ReportForDirectory.FilesInDirectory.File>());
+
 
         final CountDownLatch done = new CountDownLatch(numOfFilesInDir);
         for(int i=0;i<numOfFilesInDir;i++) {
             final Integer idx = new Integer(i);
+            reportwithJAXB.jaxb.ReportForDirectory.FilesInDirectory.File file = objectFactory.createReportForDirectoryFilesInDirectoryFile();
+            file.setNameOfFile(myFiles.get(i).getFileName()+"."+myFiles.get(i).getExtension());
+            file.setAction(act);
             executor.execute(new Runnable() {
                 @Override
                 public void run() {
                     try{
+                       final long startedTime = System.nanoTime();
                         doActionOnFile(myFiles,idx,act,encryptionAlgorithmChosen,key);
+                        final long endTime = System.nanoTime()-startedTime;
+                        file.setStatus("succeeded");
+                        reportwithJAXB.jaxb.ReportForDirectory.FilesInDirectory.File.IfSucceeded ifSucceeded = objectFactory.createReportForDirectoryFilesInDirectoryFileIfSucceeded();
+                        ifSucceeded.setTimeInMillis(TimeUnit.NANOSECONDS.toMillis(endTime));
+                        file.setIfSucceeded(ifSucceeded);
 
-                    }finally {
+                    }catch (Exception ex){
+                        file.setStatus("failed");
+                        reportwithJAXB.jaxb.ReportForDirectory.FilesInDirectory.File.IfFailed ifFailed = objectFactory.createReportForDirectoryFilesInDirectoryFileIfFailed();
+                        ifFailed.setExceptionName(ex.getClass().getSimpleName());
+                        ifFailed.setExceptionMessage(ex.getMessage());
+                        StringWriter sw = new StringWriter();//
+                        PrintWriter pw = new PrintWriter(sw);// to get Stacktrace as String
+                        ex.printStackTrace(pw);//
+                        ifFailed.setExceptionStacktrace(sw.toString());
+                        file.setIfFailed(ifFailed);
+                    }
+                    finally {
+                        filesInDirectory.getFiles().add(file);
                         done.countDown();
                     }
+
                 }
             });
         }
@@ -358,7 +444,221 @@ public class Helper {
             ex.printStackTrace();
         }
 
+        try{
+            JAXBContext jaxbContext = JAXBContext.newInstance("reportwithJAXB.jaxb");
+            Marshaller marshaller = jaxbContext.createMarshaller();
+            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT,new Boolean(true));
+            marshaller.marshal(reportForDirectory,new FileOutputStream(pathOFDir+"\\report.xml"));
+        }catch (Exception ex){
+            System.out.println("something wrong generating report in async");
+            ex.printStackTrace();
+        }
+
     }
 
+
+
+    public String getDefaultAlgorithmFromXML() throws Exception{
+
+        String encryptionAlgorithm;
+        System.out.printf("the default algorithms are:\n");
+        encryptionAlgorithm = importAlgorithmFromXMLFile("defaultEncryptionAlgorithm.xml");
+        return encryptionAlgorithm;
+
+    }
+
+
+    public String importAlgorithmFromXMLFile(String pathToXMLFile) throws JAXBException,SAXException{
+
+        JAXBContext jc = JAXBContext.newInstance("EncryptionWithJAXB.jaxb");
+        SchemaFactory factory = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema");
+        Schema schema = factory.newSchema(new File("defaultEncryptionAlgorithm.xsd"));
+        Unmarshaller unmarshaller = jc.createUnmarshaller();
+        unmarshaller.setSchema(schema);
+
+        EncryptionWithJAXB.jaxb.DefaulEencryptionAlgorithm defaulEencryptionAlgorithm =
+                (EncryptionWithJAXB.jaxb.DefaulEencryptionAlgorithm) unmarshaller.unmarshal(new File(pathToXMLFile));
+        System.out.printf("the main algorithm is: %s\n the subAlgorithm1 is: %s\n the subAlgorithm2 is: %s\n\n",defaulEencryptionAlgorithm.getMainAlgorithm(),defaulEencryptionAlgorithm.getSubAlgoruthm1(),defaulEencryptionAlgorithm.getSubAlgoruthm2());
+        this.firstAlgorithmChosen = defaulEencryptionAlgorithm.getSubAlgoruthm1();
+        this.secondAlgorithmChosen = defaulEencryptionAlgorithm.getSubAlgoruthm2();
+        return defaulEencryptionAlgorithm.getMainAlgorithm();
+    }
+
+    public boolean askUserIfHeWantToChangeDefaultAlgorithm(String prompt) {
+        String input;
+        boolean wantToChange = false;
+        boolean hasToDecideWhetherToChangeOrNot = true;
+
+        Scanner in = new Scanner(System.in);
+        while (hasToDecideWhetherToChangeOrNot) {
+            System.out.print(prompt + ": ");// we ask the user if he wants to change the default algorithm (y\n)
+            input = in.nextLine();
+
+            if (input.equals("Y") || input.equals("y")) {
+                System.out.println("you want to change the default algorithm");
+                wantToChange = true;
+                hasToDecideWhetherToChangeOrNot = false;
+            } else if (input.equals("N") || input.equals("n")) {
+                System.out.println("you don't want to change the default algorithm");
+                wantToChange = false;
+                hasToDecideWhetherToChangeOrNot = false;
+            } else
+                System.out.println("you have to choose whether to change the default or not.\n");
+
+        }
+        return wantToChange;
+    }
+
+    public Key generateOrGetKeyFromUser(String act, String keyPath){
+        Key key = new Key();
+        if(act.equals("encrypt"))
+            key.generateNewKey(keyPath);
+        else {
+            Scanner in = new Scanner(System.in);
+            String pathOFKey;
+            try {
+                System.out.print("\nenter the path of the Key: ");
+                pathOFKey=in.nextLine();
+                key.getTheKeyFromPath(pathOFKey);
+            }
+            catch (IllegalKeyException ex) {
+                System.out.println("\nyou need to insert valid path of the key");
+            }
+            System.out.println();
+        }
+
+        return key;
+    }
+
+    public boolean askUserIfHeWantsToExportImportAlgorithmToXML(String prompt){
+        String input;
+        boolean wantToExportImport = false;
+        boolean hasToDecideIfToImportExport = true;
+
+        Scanner in = new Scanner(System.in);
+        while (hasToDecideIfToImportExport) {
+            System.out.print(prompt + ": ");// we ask the user if he wants to export/import the algorithm to XML(y\n)
+            input = in.nextLine();
+
+            if (input.equals("Y") || input.equals("y")) {
+                System.out.println("you want to Import/Export");
+                wantToExportImport = true;
+                hasToDecideIfToImportExport = false;
+            } else if (input.equals("N") || input.equals("n")) {
+                System.out.println("you don't want to Import/Export");
+                wantToExportImport = false;
+                hasToDecideIfToImportExport = false;
+            } else
+                System.out.println("you have to choose whether you want to Import/Export or not.\n");
+
+        }
+        return wantToExportImport;
+
+    }
+
+    public String askUserToChooseImportOrExport(String prompt){
+        String input;
+        String importOrExport = null;
+        boolean hasToDecideIfToImportExport = true;
+
+        Scanner in = new Scanner(System.in);
+        while (hasToDecideIfToImportExport) {
+            System.out.print(prompt + ": ");// we ask the user to choose import or export
+            input = in.nextLine();
+
+            if (input.equals("M") || input.equals("m")) {
+                System.out.println("you want to Import");
+                importOrExport = "import";
+                hasToDecideIfToImportExport = false;
+            } else if (input.equals("X") || input.equals("x")) {
+                System.out.println("you want to Export");
+                importOrExport = "export";
+                hasToDecideIfToImportExport = false;
+            } else
+                System.out.println("you have to choose whether you want to iMport or eXport.\n");
+
+        }
+        return importOrExport;
+    }
+
+
+    public String getPathForExport(String prompt){
+        String path;
+        Scanner in = new Scanner(System.in);
+            System.out.print(prompt + ": ");// we ask the user to choose import or export
+        path = in.nextLine();
+
+        return path;
+
+    }
+
+    public String askUserForFilePath(String prompt){
+        boolean hasToChoosePath = true;
+        String path = null;
+
+        Scanner in = new Scanner(System.in);
+
+        while(hasToChoosePath){
+            System.out.print("\n"+prompt + ": ");// we ask the user to insert the path of the file
+            path = in.nextLine();
+
+            File file = new File(path);
+            if (file.exists() && !file.isDirectory()) {
+                hasToChoosePath = false;
+
+                } else
+                    System.out.println("you have to insert a path of existing file (not directory)\n");
+        }
+        return path;
+    }
+
+    public void exportAlgorithmToXML(String pathToDirOfXML, String encryptionAlgorithm) throws JAXBException{
+
+        EncryptionWithJAXB.jaxb.ObjectFactory objectFactory = new ObjectFactory();
+        EncryptionWithJAXB.jaxb.DefaulEencryptionAlgorithm defaultEncryptionAlgorithm = objectFactory.createDefaulEencryptionAlgorithm();
+        defaultEncryptionAlgorithm.setMainAlgorithm(encryptionAlgorithm);
+        defaultEncryptionAlgorithm.setSubAlgoruthm1(this.firstAlgorithmChosen);
+        defaultEncryptionAlgorithm.setSubAlgoruthm2(this.secondAlgorithmChosen);
+
+        JAXBContext jaxbContext = JAXBContext.newInstance("EncryptionWithJAXB.jaxb");
+        Marshaller marshaller = jaxbContext.createMarshaller();
+        marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT,new Boolean(true));
+        try{
+        marshaller.marshal(defaultEncryptionAlgorithm,new FileOutputStream(pathToDirOfXML+"\\exportedAlgorithm.xml"));
+        }catch (FileNotFoundException ex){
+            System.out.println("something wrong with exporting xml file (with IO in helper.exportAlgorithmToXML method)");
+            ex.printStackTrace();
+        }
+
+
+
+    }
+
+
+    public String importExportAlgorithmToXMLFile(String importOrExport, String encryptionAlgorithmChosen){
+        String encryptionAlgorithm = encryptionAlgorithmChosen;
+        if(importOrExport.equals("import")){
+            String pathToXML = askUserForFilePath("insert the path to the XML file You Want to import");
+            try {
+                encryptionAlgorithm = importAlgorithmFromXMLFile(pathToXML);
+            }catch (Exception ex){
+                System.out.println("something Wrong in importing XML file");
+                ex.printStackTrace();
+            }
+
+
+        }
+        else if(importOrExport.equals("export")){
+            String pathToDirOfXML = getPathForExport("insert the path to the Directory of the XML you want to export to");
+            try {
+                exportAlgorithmToXML(pathToDirOfXML,encryptionAlgorithm);
+            }catch (Exception ex){
+                System.out.println("something Wrong in exporting XML file");
+                ex.printStackTrace();
+            }
+        }
+
+        return encryptionAlgorithm;
+    }
 
 }
