@@ -6,7 +6,7 @@ package encryptor;
 public class XorAlgorithm extends EncryptDecryptObservable {
 
     @Override
-    public void encrypt(byte key, MyFile myfile) {
+    public void encrypt(byte key, MyFile myfile) throws Exception{
 
         encrypt_decrypt_start("Encryption",myfile.getFileName()+"."+myfile.getExtension());
         byte[] copiedFileData = getTheFileData(myfile);
@@ -23,7 +23,7 @@ public class XorAlgorithm extends EncryptDecryptObservable {
     }
 
     @Override
-    public void decrypt(byte key, MyFile myfile) {
+    public void decrypt(byte key, MyFile myfile) throws Exception{
         encrypt_decrypt_start("Decryption",myfile.getFileName()+"."+myfile.getExtension());
         byte[] copiedFileData = getTheFileData(myfile);
 

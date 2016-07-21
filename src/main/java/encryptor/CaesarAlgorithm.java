@@ -1,12 +1,14 @@
 package encryptor;
 
+import java.io.IOException;
+
 /**
  * Created by murad on 05/07/2016.
  */
 public class CaesarAlgorithm extends EncryptDecryptObservable {
 
     @Override
-    public void encrypt(byte key, MyFile myfile) {
+    public void encrypt(byte key, MyFile myfile) throws Exception {
         encrypt_decrypt_start("Encryption",myfile.getFileName()+"."+myfile.getExtension());
 
         byte[] copiedFileData = getTheFileData(myfile);
@@ -26,7 +28,7 @@ public class CaesarAlgorithm extends EncryptDecryptObservable {
 
 
     @Override
-    public void decrypt(byte key, MyFile myfile) {
+    public void decrypt(byte key, MyFile myfile) throws Exception{
 
         encrypt_decrypt_start("Decryption",myfile.getFileName()+"."+myfile.getExtension());
 

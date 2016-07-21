@@ -49,7 +49,7 @@ public class XorAlgorithmTest {
     }
 
     @Test
-    public void testXorAlgorithmEncryptionAndDecryption() {
+    public void testXorAlgorithmEncryptionAndDecryption() throws Exception {
 
         xorAlgorithm = new XorAlgorithm();
 

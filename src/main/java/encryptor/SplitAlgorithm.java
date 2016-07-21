@@ -6,7 +6,7 @@ package encryptor;
 public class SplitAlgorithm  extends EncryptDecryptObservable implements EncryptionAlgorithmsWithGeneric {
 
     @Override
-    public <Alg1 extends EncryptDecryptObservable ,Alg2 extends EncryptDecryptObservable> void encrypt(Key key, MyFile myfile, Alg1 algorithm1, Alg2 algorithm2){
+    public <Alg1 extends EncryptDecryptObservable ,Alg2 extends EncryptDecryptObservable> void encrypt(Key key, MyFile myfile, Alg1 algorithm1, Alg2 algorithm2) throws Exception{
 
         encrypt_decrypt_start("Encryption",myfile.getFileName()+"."+myfile.getExtension());
 
@@ -27,7 +27,7 @@ public class SplitAlgorithm  extends EncryptDecryptObservable implements Encrypt
     }
 
     @Override
-    public <Alg1 extends EncryptDecryptObservable,Alg2 extends EncryptDecryptObservable> void decrypt(Key key, MyFile myfile, Alg1 algorithm1, Alg2 algorithm2){
+    public <Alg1 extends EncryptDecryptObservable,Alg2 extends EncryptDecryptObservable> void decrypt(Key key, MyFile myfile, Alg1 algorithm1, Alg2 algorithm2) throws Exception{
 
         encrypt_decrypt_start("Decryption",myfile.getFileName()+"."+myfile.getExtension());
 

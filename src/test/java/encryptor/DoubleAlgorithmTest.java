@@ -63,7 +63,7 @@ public class DoubleAlgorithmTest {
     }
 
     @Test
-    public void testDoubleAlgorithmEncryptionAndDecryption() {
+    public void testDoubleAlgorithmEncryptionAndDecryption() throws Exception {
 
         doubleAlgorithm = new DoubleAlgorithm();
 

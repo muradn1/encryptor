@@ -1,6 +1,8 @@
 package encryptor;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Observable;
 
 /**
@@ -42,22 +44,18 @@ public abstract class EncryptDecryptObservable extends Observable implements Enc
         return copiedFileData;
     }
 
-    public void createTheEncryptedFile(MyFile myfile, byte[] copiedFileData) {
+    public void createTheEncryptedFile(MyFile myfile, byte[] copiedFileData) throws FileNotFoundException, IOException {
 
         String newEncryptedFileName = myfile.getFileFullPath()+"."+"encrypted";
         File encryptedDir = new File(myfile.getFilePath()+"\\encrypted");
         if(encryptedDir.exists())
             newEncryptedFileName = myfile.getFilePath()+"\\encrypted\\"+myfile.getFileName()+"."+myfile.getExtension()+"."+"encrypted";
 
-        try {
+
             FileOutputStream fos = new FileOutputStream(newEncryptedFileName);
             fos.write(copiedFileData);
             fos.close();
-        }
-        catch(Exception e) {
-            System.out.println("error in creating/writing to new file.encrypted");
-            e.printStackTrace();
-        }
+
     }
 
     public String getExtensionForDecryptedFile(String FullPath){
@@ -83,7 +81,7 @@ public abstract class EncryptDecryptObservable extends Observable implements Enc
         return name;
     }
 
-    public void createTheDecryptedFile(MyFile myfile, byte[] copiedFileData) {
+    public void createTheDecryptedFile(MyFile myfile, byte[] copiedFileData) throws FileNotFoundException, IOException {
 
         String newExtension =  getExtensionForDecryptedFile(myfile.getFileFullPath());
         String newName = getRealNameForDecryptedFile(myfile.getFileName());
@@ -95,14 +93,10 @@ public abstract class EncryptDecryptObservable extends Observable implements Enc
         if(decryptedDir.exists())
             newDecryptedFileName = myfile.getFilePath()+"\\decrypted\\"+newName+"_decrypted"+"."+newExtension;
 
-        try {
+
             FileOutputStream fos = new FileOutputStream(newDecryptedFileName);
             fos.write(copiedFileData);
             fos.close();
-        }
-        catch(Exception e) {
-            System.out.println("error in creating/writing to new file_decrypted.extension");
-            e.printStackTrace();
-        }
+
     }
 }

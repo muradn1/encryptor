@@ -59,7 +59,7 @@ public class ReverseAlgorithmTest {
     }
 
     @Test
-    public void testDoubleAlgorithmEncryptionAndDecryption() {
+    public void testDoubleAlgorithmEncryptionAndDecryption() throws Exception{
 
         reverseAlgorithm = new ReverseAlgorithm();
 

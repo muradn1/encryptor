@@ -59,7 +59,7 @@ public class SplitAlgorithmTest {
     }
 
     @Test
-    public void testDoubleAlgorithmEncryptionAndDecryption() {
+    public void testDoubleAlgorithmEncryptionAndDecryption() throws Exception {
 
         splitAlgorithm = new SplitAlgorithm();
 

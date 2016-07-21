@@ -50,7 +50,7 @@ public class CaesarAlgorithmTest {
     }
 
     @Test
-    public void testCaesarEncryptionAndDecryption() {
+    public void testCaesarEncryptionAndDecryption() throws Exception {
 
         caesar = new CaesarAlgorithm();
 

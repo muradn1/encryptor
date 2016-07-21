@@ -48,7 +48,7 @@ public class MultiplicationAlgorithmTest {
         baos = null;
     }
     @Test
-    public void testXorAlgorithmEncryptionAndDecryption() {
+    public void testXorAlgorithmEncryptionAndDecryption() throws Exception {
 
         multiplicationAlgorithm = new MultiplicationAlgorithm();
 
