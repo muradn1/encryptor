@@ -1,5 +1,5 @@
 <defaulEencryptionAlgorithm>
-	<mainAlgorithm>Caesar</mainAlgorithm>
+	<mainAlgorithm>caesar</mainAlgorithm>
 		<subAlgoruthm1>null</subAlgoruthm1>
 		<subAlgoruthm2>null</subAlgoruthm2>
 </defaulEencryptionAlgorithm>
