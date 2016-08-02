@@ -6,6 +6,8 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 import org.apache.log4j.*;
 
 
@@ -61,11 +63,17 @@ public class App {
 
         EncryptionAlgorithms encryptionAlgorithms;
         isSimpleAlgorithm = helper.isSimpleAlgorithmHasChosen(encryptionAlgorithmChosen);
-        if(isSimpleAlgorithm)
-            encryptionAlgorithms = new EncryptionAlgorithms(encryptionAlgorithmChosen);
-        else
-            encryptionAlgorithms = new EncryptionAlgorithms(encryptionAlgorithmChosen,helper.getFirstAlgorithmChosen(),helper.getSecondAlgorithmChosen());
+        Injector injector;
+        if(isSimpleAlgorithm) {
+            //encryptionAlgorithms = new EncryptionAlgorithms(encryptionAlgorithmChosen);
+            injector = Guice.createInjector(new AlgorithmsModule(encryptionAlgorithmChosen));
+        }
+        else {
+            //encryptionAlgorithms = new EncryptionAlgorithms(encryptionAlgorithmChosen, helper.getFirstAlgorithmChosen(), helper.getSecondAlgorithmChosen());
+            injector = Guice.createInjector(new AlgorithmsModule(encryptionAlgorithmChosen, helper.getFirstAlgorithmChosen(), helper.getSecondAlgorithmChosen()));
+        }
 
+        encryptionAlgorithms = injector.getInstance(EncryptionAlgorithms.class);
 
         if(isDir) {
             long timeStarted = System.nanoTime();
