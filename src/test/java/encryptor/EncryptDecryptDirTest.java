@@ -2,6 +2,7 @@ package encryptor;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -102,7 +103,9 @@ public class EncryptDecryptDirTest {
         filesForEncrypt.add(firstFileForEncrypt);
 
 
-        helper.doSyncActionOnDir(filesForEncrypt,"encrypt","xor",key);
+        EncryptionAlgorithms encryptionAlgorithms = new EncryptionAlgorithms("xor");
+
+        helper.doSyncActionOnDir(filesForEncrypt,"encrypt",encryptionAlgorithms,key);
 
         ArrayList<MyFile> filesForDecrypt = new ArrayList<>();
         MyFile firstFileForDecrypt = new MyFile(pathOfFirstFileForDecrypt);

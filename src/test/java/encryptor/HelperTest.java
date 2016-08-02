@@ -10,7 +10,6 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
 
 import static org.hamcrest.CoreMatchers.*;
-import static org.hamcrest.Matchers.greaterThan;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -95,7 +94,7 @@ public class HelperTest {
             e.printStackTrace();
         }
 
-        String act = helper.getUserInput("when user insert e/E");
+        String act = helper.askUserToChooseEncryptOrDecrypt("when user insert e/E");
         assertEquals("the user chose to encrypt and the system response accordingly","encrypt",act);
 
         try {
@@ -107,7 +106,7 @@ public class HelperTest {
             e.printStackTrace();
         }
 
-        act = helper.getUserInput("when user insert d/D");
+        act = helper.askUserToChooseEncryptOrDecrypt("when user insert d/D");
         assertEquals("the user chose to decrypt and the system response accordingly","decrypt",act);
 
         try {
@@ -120,7 +119,7 @@ public class HelperTest {
             e.printStackTrace();
         }
 
-        act = helper.getUserInput("when user insert wrong input then insert d/D");
+        act = helper.askUserToChooseEncryptOrDecrypt("when user insert wrong input then insert d/D");
         assertThat("outPutStream contains error stream",baos.toString().contains("you have to choose whether to encrypt or decrypt."),is(true));
     }
 
