@@ -1,5 +1,7 @@
 package encryptor;
 
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import lombok.Getter;
 
 /**
@@ -8,19 +10,36 @@ import lombok.Getter;
 public class EncryptionAlgorithms {
 
     @Getter private EncryptionAlgorithm simpleMainEncryptionAlgorithmInstance = null;
+    @Named("firstSubAlgorithm")
     @Getter private EncryptDecryptObservable firstSubAlgorithmInstance = null;
+    @Named("secondSubAlgorithm")
     @Getter private EncryptDecryptObservable secondSubAlgorithmInstance = null;
     @Getter private EncryptionAlgorithmsWithGeneric complexMainEncryptionAlgorithmInstance = null;
+
+    @Inject
+    EncryptionAlgorithms(EncryptionAlgorithm simpleMainEncryptionAlgorithmInstance,
+                         @Named("firstSubAlgorithm")
+                         EncryptDecryptObservable firstSubAlgorithmInstance,
+                         @Named("secondSubAlgorithm")
+                         EncryptDecryptObservable secondSubAlgorithmInstance,
+                         EncryptionAlgorithmsWithGeneric complexMainEncryptionAlgorithmInstance) {
+        this.simpleMainEncryptionAlgorithmInstance = simpleMainEncryptionAlgorithmInstance;
+
+        this.firstSubAlgorithmInstance = firstSubAlgorithmInstance;
+        this.secondSubAlgorithmInstance = secondSubAlgorithmInstance;
+        this.complexMainEncryptionAlgorithmInstance = complexMainEncryptionAlgorithmInstance;
+    }
+
 
     public EncryptionAlgorithms(String simpleMainAlgorithm){
         simpleMainEncryptionAlgorithmInstance = getSimpleAlgorithmInstance(simpleMainAlgorithm);
     }
 
-    public EncryptionAlgorithms(String complexMainAlgorithm, String firstSubAlgorithmInstance, String secondSubAlgorithmInstance){
+    public EncryptionAlgorithms(String complexMainAlgorithm, String firstSubAlgorithm, String secondSubAlgorithm){
         complexMainEncryptionAlgorithmInstance = getComplexAlgorithmInstance(complexMainAlgorithm);
-        this.firstSubAlgorithmInstance = (EncryptDecryptObservable)getSimpleAlgorithmInstance(firstSubAlgorithmInstance);
-        if(!secondSubAlgorithmInstance.equals(null))
-            this.secondSubAlgorithmInstance = (EncryptDecryptObservable)getSimpleAlgorithmInstance(secondSubAlgorithmInstance);
+        this.firstSubAlgorithmInstance = (EncryptDecryptObservable)getSimpleAlgorithmInstance(firstSubAlgorithm);
+        if(!secondSubAlgorithm.equals(null))
+            this.secondSubAlgorithmInstance = (EncryptDecryptObservable)getSimpleAlgorithmInstance(secondSubAlgorithm);
     }
 
     public EncryptionAlgorithm getSimpleAlgorithmInstance(String encryptionAlgorithmChosen){
