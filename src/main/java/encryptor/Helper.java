@@ -1,10 +1,10 @@
 package encryptor;
 
 import EncryptionWithJAXB.jaxb.ObjectFactory;
-import com.sun.xml.internal.bind.v2.schemagen.xmlschema.List;
 import lombok.Getter;
+import org.apache.log4j.Appender;
+import org.apache.log4j.FileAppender;
 import org.xml.sax.SAXException;
-import reportwithJAXB.jaxb.ReportForDirectory;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -12,8 +12,8 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
-import javax.xml.validation.Validator;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.Scanner;
 import java.io.*;
 import java.util.concurrent.CountDownLatch;
@@ -26,12 +26,12 @@ import java.util.concurrent.TimeUnit;
  */
 public class Helper {
 
-     private String firstAlgorithmChosen = null;
-     private String secondAlgorithmChosen = null;
+    @Getter private String firstAlgorithmChosen = null;
+    @Getter private String secondAlgorithmChosen = null;
 
-    @Getter private boolean simpleAlgorithmHasChosen = false;
+    @Getter public boolean isSimpleAlgorithmHasChosen = false;
 
-    public String getUserInput(String prompt) {
+    public String askUserToChooseEncryptOrDecrypt(String prompt) {
         String input,act=null;
         boolean hasToChooseAction = true;
 
@@ -81,7 +81,7 @@ public class Helper {
         return isDir;
     }
 
-    public boolean askUserIfHeWantsSyncOrAsync(String prompt){
+    public boolean askUserToChooseSyncOrAsync(String prompt){
         boolean isSync = false;
         boolean hasToChooseSyncOrAsync = true;
         String input;
@@ -108,7 +108,7 @@ public class Helper {
     public String getFilePathFromUser(ArrayList<MyFile> MyFiles,boolean isDir, String prompt) {
         boolean hasToChoosePath = true;
         String path;
-        String keyPath = null;
+        String pathOfBaseDir = null;
 
         Scanner in = new Scanner(System.in);
 
@@ -116,14 +116,13 @@ public class Helper {
             System.out.print("\n"+prompt + ": ");// we ask the user to insert the path of the file
             path = in.nextLine();
 
-
             if(!isDir) {
                 File file = new File(path);
                 if (file.exists() && !file.isDirectory() && file.canRead()) {
 
                     MyFile userFile = new MyFile(path);
                     MyFiles.add(userFile);
-                    keyPath = userFile.getFilePath();
+                    pathOfBaseDir = userFile.getFilePath();
                     hasToChoosePath = false;
 
                 } else
@@ -132,31 +131,49 @@ public class Helper {
             else if(isDir){
                 File Dir = new File(path);
                 if(Dir.exists() && Dir.isDirectory()){
-                    for(File fileEntry : Dir.listFiles()){
-                        if(!fileEntry.isDirectory()){
-                            MyFile fileInDir = new MyFile(fileEntry.getAbsolutePath());
-                            MyFiles.add(fileInDir);
-                        }
-                    }
-                    File encryptedDir = new File(path+"\\encrypted");
-                    File decryptedDir = new File(path+"\\decrypted");
-                    try{
-                        if(!encryptedDir.exists())
-                        encryptedDir.mkdir();
-                        if(!decryptedDir.exists())
-                        decryptedDir.mkdir();
-                    }
-                    catch (SecurityException ex){
-                        System.out.println("we Can't make sub-directories");
-                    }
-                    keyPath = path;
+
+                    pathOfBaseDir = path;
                     hasToChoosePath = false;
+
                 }else
                     System.out.println("you have to insert a path of existing directory\n");
             }
-
         }
-        return keyPath;
+        return pathOfBaseDir;
+    }
+
+    public ArrayList<MyFile> getFilesFromDirPath(String pathOfBaseDir, String act){
+        ArrayList<MyFile> myFiles = new ArrayList<MyFile>();
+
+        File Dir = new File(pathOfBaseDir);
+        for(File fileEntry : Dir.listFiles()){
+            if(!fileEntry.isDirectory()){
+                MyFile fileInDir = new MyFile(fileEntry.getAbsolutePath());
+                myFiles.add(fileInDir);
+            }
+        }
+        if(act.equals("encrypt")){
+            File encryptedDir = new File(pathOfBaseDir+"\\encrypted");
+            try{
+                if(!encryptedDir.exists())
+                    encryptedDir.mkdir();
+            }catch (SecurityException ex){
+                System.out.println("we Can't make encrypted sub-directory");
+                ex.printStackTrace();
+            }
+        }
+        else if(act.equals("decrypt")){
+            File decryptedDir = new File(pathOfBaseDir+"\\decrypted");
+            try{
+                if(!decryptedDir.exists())
+                    decryptedDir.mkdir();
+             }catch (SecurityException ex){
+                System.out.println("we Can't make sub-directories");
+                ex.printStackTrace();
+            }
+        }
+
+        return myFiles;
     }
 
 
@@ -172,21 +189,21 @@ public class Helper {
             if (input.equals("D") || input.equals("d")) {
                 System.out.println("you chose Double Algorithm");
                 encryptionAlgorithmChosen = "double";
-                simpleAlgorithmHasChosen = false;
+                isSimpleAlgorithmHasChosen = false;
                 hasToChooseEncryptionAlgorithm = false;
             } else if (input.equals("R") || input.equals("r")) {
                 System.out.println("you chose Reverse Algorithm");
                 encryptionAlgorithmChosen = "reverse";
-                simpleAlgorithmHasChosen = false;
+                isSimpleAlgorithmHasChosen = false;
                 hasToChooseEncryptionAlgorithm = false;
             } else if (input.equals("S") || input.equals("s")) {
                 System.out.println("you chose Split Algorithm");
                 encryptionAlgorithmChosen = "split";
-                simpleAlgorithmHasChosen = false;
+                isSimpleAlgorithmHasChosen = false;
                 hasToChooseEncryptionAlgorithm = false;
             }else if (input.equals("O") || input.equals("o")) {
                 encryptionAlgorithmChosen = ChooseSimpleEncryptionAlgorithm("enter C/c for Caesar, X/x for XOR, or M/m for Multiplication");
-                simpleAlgorithmHasChosen = true;
+                isSimpleAlgorithmHasChosen = true;
                 hasToChooseEncryptionAlgorithm = false;
             }else
                 System.out.println("you have to choose one of the Algorithms proposed.\n");
@@ -232,59 +249,6 @@ public class Helper {
 
 
 
-
-    public EncryptionAlgorithm getSimpleAlgorithmInstance(String encryptionAlgorithmChosen) {
-
-        EncryptionAlgorithm simpleAlgorithmInstance;
-
-        switch (encryptionAlgorithmChosen){
-            case "caesar": simpleAlgorithmInstance = new CaesarAlgorithm();
-                simpleAlgorithmHasChosen = true;
-                break;
-            case "xor": simpleAlgorithmInstance = new XorAlgorithm();
-                simpleAlgorithmHasChosen = true;
-                break;
-            case "multi": simpleAlgorithmInstance = new MultiplicationAlgorithm();
-                simpleAlgorithmHasChosen = true;
-                break;
-            default:
-                simpleAlgorithmInstance = new CaesarAlgorithm();
-                simpleAlgorithmHasChosen = false;
-                break;
-        }
-
-        return simpleAlgorithmInstance;
-    }
-
-
-
-
-    public EncryptionAlgorithmsWithGeneric getComplexAlgorithmInstance(String encryptionAlgorithmChosen) {
-
-        EncryptionAlgorithmsWithGeneric complexAlgorithmInstance;
-
-        switch (encryptionAlgorithmChosen){
-            case "double": complexAlgorithmInstance = new DoubleAlgorithm();
-                simpleAlgorithmHasChosen = false;
-                break;
-            case "reverse": complexAlgorithmInstance = new ReverseAlgorithm();
-                simpleAlgorithmHasChosen = false;
-                break;
-            case "split": complexAlgorithmInstance= new SplitAlgorithm();
-                simpleAlgorithmHasChosen = false;
-                break;
-            default:
-                complexAlgorithmInstance = new ReverseAlgorithm();
-                simpleAlgorithmHasChosen = false;
-                break;
-        }
-
-        return complexAlgorithmInstance;
-    }
-
-
-
-
     public void getMoreAlgorithmsIfComplexAlgorithmChosen(String encryptionAlgorithmChosen) {
         System.out.println("\nyou chose complex algorithm, for that you need to choose 1 more algorithms to be used in");
         System.out.println("Choose the first algorithm:");
@@ -302,27 +266,30 @@ public class Helper {
 
 
 
-    public void doActionOnFile(ArrayList<MyFile> MyFiles, int idx, String act, String encryptionAlgorithmChosen,Key key) throws Exception {
+    public void doActionOnFile(ArrayList<MyFile> MyFiles, int idx, String act, EncryptionAlgorithms encryptionAlgorithms,Key key) throws Exception {
 
         EncryptionAlgorithm simpleEncryptionAlgorithm = null;
         EncryptDecryptObservable firstAlgorithm = null, secondAlgorithm = null;
         EncryptionAlgorithmsWithGeneric complexEncryptionAlgorithm = null;
 
-        simpleEncryptionAlgorithm = getSimpleAlgorithmInstance(encryptionAlgorithmChosen);
 
-        if(!simpleAlgorithmHasChosen){
-            complexEncryptionAlgorithm = getComplexAlgorithmInstance(encryptionAlgorithmChosen);
-            firstAlgorithm = (EncryptDecryptObservable)getSimpleAlgorithmInstance(firstAlgorithmChosen);
+        if(!isSimpleAlgorithmHasChosen){
+            complexEncryptionAlgorithm = encryptionAlgorithms.getComplexMainEncryptionAlgorithmInstance();
+            firstAlgorithm = (EncryptDecryptObservable)encryptionAlgorithms.getFirstSubAlgorithmInstance();
             if(secondAlgorithmChosen != null)
-                secondAlgorithm = (EncryptDecryptObservable)getSimpleAlgorithmInstance(secondAlgorithmChosen);
-        }
+                secondAlgorithm = (EncryptDecryptObservable)encryptionAlgorithms.getSecondSubAlgorithmInstance();
+        }else
+            simpleEncryptionAlgorithm = encryptionAlgorithms.getSimpleMainEncryptionAlgorithmInstance();
 
+        if(simpleEncryptionAlgorithm == null && complexEncryptionAlgorithm == null) {
+            throw new NullPointerException();
+        }
 
 
         MyFile myfile = MyFiles.get(idx);
         if(act.equals("encrypt")) {
 
-            if(simpleAlgorithmHasChosen)
+            if(isSimpleAlgorithmHasChosen)
                 simpleEncryptionAlgorithm.encrypt(key.getKey()[0], myfile);
             else
                 complexEncryptionAlgorithm.<EncryptDecryptObservable,EncryptDecryptObservable>encrypt(key,myfile,firstAlgorithm,secondAlgorithm);
@@ -330,7 +297,7 @@ public class Helper {
 
         else if(act.equals("decrypt")) {
 
-            if(simpleAlgorithmHasChosen)
+            if(isSimpleAlgorithmHasChosen)
                 simpleEncryptionAlgorithm.decrypt(key.getKey()[0], myfile);
             else
                 complexEncryptionAlgorithm.<EncryptDecryptObservable,EncryptDecryptObservable>decrypt(key,myfile,firstAlgorithm,secondAlgorithm);
@@ -338,7 +305,7 @@ public class Helper {
     }
 
 
-    public void doSyncActionOnDir(ArrayList<MyFile> myFiles,String act, String encryptionAlgorithmChosen, Key key){
+    public void doSyncActionOnDir(ArrayList<MyFile> myFiles,String act, EncryptionAlgorithms encryptionAlgorithms, Key key){
 
         String pathOFDir = myFiles.get(0).getFilePath();
         reportwithJAXB.jaxb.ObjectFactory objectFactory = new reportwithJAXB.jaxb.ObjectFactory();
@@ -354,12 +321,15 @@ public class Helper {
             file.setAction(act);
             try{
                 startedTime = System.nanoTime();
-                doActionOnFile(myFiles,i,act,encryptionAlgorithmChosen,key);
+                App.logger.info("the "+ act + " of the file:"+myFiles.get(i).getFileName() + " has started");
+                doActionOnFile(myFiles,i,act,encryptionAlgorithms,key);
                 endTime = System.nanoTime()-startedTime;
                 file.setStatus("succeeded");
                 reportwithJAXB.jaxb.ReportForDirectory.FilesInDirectory.File.IfSucceeded ifSucceeded = objectFactory.createReportForDirectoryFilesInDirectoryFileIfSucceeded();
                 ifSucceeded.setTimeInMillis(TimeUnit.NANOSECONDS.toMillis(endTime));
                 file.setIfSucceeded(ifSucceeded);
+                App.logger.info("the "+ act + " of the file:"+myFiles.get(i).getFileName() + " is done");
+                App.logger.info("the time it took(in seconds) for the file - " +myFiles.get(i).getFileName() + "is: "+ TimeUnit.NANOSECONDS.toSeconds(endTime));
 
             }catch (Exception ex){
                 file.setStatus("failed");
@@ -371,6 +341,10 @@ public class Helper {
                 ex.printStackTrace(pw);//
                 ifFailed.setExceptionStacktrace(sw.toString());
                 file.setIfFailed(ifFailed);
+
+                App.logger.info("the "+ act + " of the file: "+myFiles.get(i).getFileName() + " hasStopped");
+                App.logger.error("error in "+act+" the file "+myFiles.get(i).getFileName()+" because of the exception: " + ex.getClass().getSimpleName() );
+
             }finally {
                 filesInDirectory.getFiles().add(file);
             }
@@ -388,7 +362,7 @@ public class Helper {
 
     }
 
-    public void doAsyncActionOnDir(ArrayList<MyFile> myFiles,String act, String encryptionAlgorithmChosen, Key key){
+    public void doAsyncActionOnDir(ArrayList<MyFile> myFiles,String act, EncryptionAlgorithms encryptionAlgorithms, Key key){
         Executor executor = new threadPerTaskExecutor();
         int numOfFilesInDir = myFiles.size();
         String pathOFDir = myFiles.get(0).getFilePath();
@@ -411,12 +385,15 @@ public class Helper {
                 public void run() {
                     try{
                        final long startedTime = System.nanoTime();
-                        doActionOnFile(myFiles,idx,act,encryptionAlgorithmChosen,key);
+                        App.logger.info("the "+ act + " of the file:"+myFiles.get(idx).getFileName() + " has started");
+                        doActionOnFile(myFiles,idx,act,encryptionAlgorithms,key);
                         final long endTime = System.nanoTime()-startedTime;
                         file.setStatus("succeeded");
                         reportwithJAXB.jaxb.ReportForDirectory.FilesInDirectory.File.IfSucceeded ifSucceeded = objectFactory.createReportForDirectoryFilesInDirectoryFileIfSucceeded();
                         ifSucceeded.setTimeInMillis(TimeUnit.NANOSECONDS.toMillis(endTime));
                         file.setIfSucceeded(ifSucceeded);
+                        App.logger.info("the "+ act + " of the file: "+myFiles.get(idx).getFileName() + " is done");
+                        App.logger.info("the time it took(in seconds) for the file - "+myFiles.get(idx).getFileName()+ "is: " + TimeUnit.NANOSECONDS.toSeconds(endTime));
 
                     }catch (Exception ex){
                         file.setStatus("failed");
@@ -428,6 +405,10 @@ public class Helper {
                         ex.printStackTrace(pw);//
                         ifFailed.setExceptionStacktrace(sw.toString());
                         file.setIfFailed(ifFailed);
+
+                        App.logger.info("the "+ act + " of the file: "+myFiles.get(idx).getFileName() + " hasStopped");
+                        App.logger.error("error in "+act+" the file "+myFiles.get(idx).getFileName()+" because of the exception: " + ex.getClass().getSimpleName() );
+
                     }
                     finally {
                         filesInDirectory.getFiles().add(file);
@@ -456,6 +437,32 @@ public class Helper {
 
     }
 
+    public boolean isSimpleAlgorithmHasChosen(String mainEncryptionAlgorithmChosen){
+        switch (mainEncryptionAlgorithmChosen){
+            case "caesar":
+                isSimpleAlgorithmHasChosen = true;
+                break;
+            case "xor":
+                isSimpleAlgorithmHasChosen = true;
+                break;
+            case "multi":
+                isSimpleAlgorithmHasChosen = true;
+                break;
+            case "double":
+                isSimpleAlgorithmHasChosen = false;
+                break;
+            case "reverse":
+                isSimpleAlgorithmHasChosen = false;
+                break;
+            case "split":
+                isSimpleAlgorithmHasChosen = false;
+                break;
+            default:
+                isSimpleAlgorithmHasChosen = true;
+                break;
+        }
+        return isSimpleAlgorithmHasChosen;
+    }
 
 
     public String getDefaultAlgorithmFromXML() throws Exception{
@@ -660,5 +667,25 @@ public class Helper {
 
         return encryptionAlgorithm;
     }
+    public void updateLog4jConfiguration(String logFile) {
+        Enumeration appenders = App.logger.getAllAppenders();
+        FileAppender fa = null;
+
+        while(appenders.hasMoreElements()) {
+            Appender currAppender = (Appender) appenders.nextElement();
+            if(currAppender instanceof FileAppender) {
+                fa = (FileAppender) currAppender;
+            }
+        }
+        if(fa != null) {
+            fa.setFile(logFile);
+            fa.activateOptions();
+        }
+        else {
+            System.out.println("No File Appender found");
+        }
+
+    }
+
 
 }

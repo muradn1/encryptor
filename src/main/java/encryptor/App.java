@@ -4,25 +4,25 @@ package encryptor;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
+
+import org.apache.log4j.*;
 
 
 public class App {
+
+    final static Logger logger = Logger.getRootLogger();
+
     public static void main( String[] args ) {
         ArrayList<MyFile> myFiles = new ArrayList<MyFile>();
-        String act, encryptionAlgorithmChosen = null;
+        String act, encryptionAlgorithmChosen = null, pathOfBaseDir;
         int idx;
-        boolean isDir;
-        boolean isSync = false;
-        boolean wantToChange = false;
-        boolean wantToImportExport = false;
-        String pathOfBaseDir;
+        boolean isDir,isSync = false, wantToChange = false, wantToImportExport = false, isSimpleAlgorithm;
         Key key;
 
         Helper helper = new Helper();
 
-        try {
+        try {// try to load default encryption algorithm from XML file
             encryptionAlgorithmChosen = helper.getDefaultAlgorithmFromXML();
         }catch (Exception ex){
             System.out.println("something wrong with JAXB");
@@ -30,13 +30,15 @@ public class App {
         }
 
 
-        act = helper.getUserInput("enter E/e for Encryption or D/d for Decryption");
+        act = helper.askUserToChooseEncryptOrDecrypt("enter E/e for Encryption or D/d for Decryption");
 
 
         isDir = helper.askUserToChooseDirOrFile("enter D/d for Directory or F/f for file");
 
         pathOfBaseDir = helper.getFilePathFromUser(myFiles, isDir,(isDir ?"please insert the path of the directory" :"please insert the path of the file") );
 
+        if(isDir)
+            myFiles = helper.getFilesFromDirPath(pathOfBaseDir,act);
 
         key = helper.generateOrGetKeyFromUser(act,pathOfBaseDir);
 
@@ -54,17 +56,27 @@ public class App {
             encryptionAlgorithmChosen = helper.importExportAlgorithmToXMLFile(importOrExport,encryptionAlgorithmChosen);
         }
 
+        PropertyConfigurator.configure("log4j.properties");
+        helper.updateLog4jConfiguration(pathOfBaseDir+"\\log.log");
+
+        EncryptionAlgorithms encryptionAlgorithms;
+        isSimpleAlgorithm = helper.isSimpleAlgorithmHasChosen(encryptionAlgorithmChosen);
+        if(isSimpleAlgorithm)
+            encryptionAlgorithms = new EncryptionAlgorithms(encryptionAlgorithmChosen);
+        else
+            encryptionAlgorithms = new EncryptionAlgorithms(encryptionAlgorithmChosen,helper.getFirstAlgorithmChosen(),helper.getSecondAlgorithmChosen());
+
 
         if(isDir) {
             long timeStarted = System.nanoTime();
-            isSync =  helper.askUserIfHeWantsSyncOrAsync("enter S/s for sync or A/a for async");
+            isSync =  helper.askUserToChooseSyncOrAsync("enter S/s for sync or A/a for async");
 
             System.out.println("\nthe "+act+" of the directory in "+(isSync ? "Sync": "Async")+ " approach has started\n");
 
             if(isSync)
-                helper.doSyncActionOnDir(myFiles,act,encryptionAlgorithmChosen,key);
+                helper.doSyncActionOnDir(myFiles,act,encryptionAlgorithms,key);
             else if(!isSync)
-                helper.doAsyncActionOnDir(myFiles,act,encryptionAlgorithmChosen,key);
+                helper.doAsyncActionOnDir(myFiles,act,encryptionAlgorithms,key);
 
             System.out.println("\nthe "+act+" of the directory in "+(isSync ? "Sync": "Async")+ " approach is done");
 
@@ -73,7 +85,11 @@ public class App {
 
         if(!isDir) {
             try {
-                helper.doActionOnFile(myFiles, 0, act, encryptionAlgorithmChosen, key); //encrypt/decrypt the file
+                long startedTime = System.nanoTime();
+                logger.info("the "+ act + " of the file:"+myFiles.get(0).getFileName() + " has started");
+                helper.doActionOnFile(myFiles, 0, act, encryptionAlgorithms, key); //encrypt/decrypt the file
+                logger.info("the "+ act + " of the file:"+myFiles.get(0).getFileName() + " is done");
+                logger.info("the time it took(in seconds): "+ TimeUnit.NANOSECONDS.toSeconds(System.nanoTime()-startedTime));
             }catch (Exception ex){
                 System.out.println("exception name: "+ex.getClass().getSimpleName());
                 System.out.println("exception message: "+ex.getMessage());
@@ -82,6 +98,8 @@ public class App {
                 PrintWriter pw = new PrintWriter(sw);
                 ex.printStackTrace(pw);
                 System.out.println("exception Stacktrace: "+ sw.toString());
+                logger.info("the "+ act + " of the file: "+myFiles.get(0).getFileName() + " hasStopped");
+                logger.error("error in "+act+" the file "+myFiles.get(0).getFileName()+" because of the exception: " + ex.getClass().getSimpleName() );
             }
        }
 
